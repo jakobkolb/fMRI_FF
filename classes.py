@@ -13,11 +13,12 @@
 
 from psychopy import core, visual, event
 import numpy as np
-
+import globvar
 class trial:
     'class to outline trial structure'
     trialCount = 0
     ts = 1.5
+
 
 #initialization of the trial parameters
 
@@ -37,7 +38,6 @@ class trial:
         self.time_decision  = timing[2]*trial.ts  #display time for decision screen
         self.time_delay_2   = timing[3]*trial.ts  #display time for baseline
         trial.trialCount    += 1
-
 #define different slides for the trial (A: Stimulus, B: Delay, C: Decision, D: Baseline)
 
     def define_slide_A(self):
@@ -48,8 +48,8 @@ class trial:
             mpos1 = self.pos_marker_2
             mpos2 = self.pos_marker_1
  
-        marker_1= visual.ImageStim(self.window, image='circle.gif', pos=mpos1)
-        marker_2= visual.ImageStim(self.window, image='star.jpg', pos=mpos2)
+        marker_1= visual.ImageStim(self.window, image=globvar.file_marker_1, pos=mpos1)
+        marker_2= visual.ImageStim(self.window, image=globvar.file_marker_2, pos=mpos2)
 
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
 
@@ -101,8 +101,8 @@ class trial:
         elif self.flip[0] == 1:
             mpos1 = self.pos_marker_2
             mpos2 = self.pos_marker_1
-        marker_1= visual.ImageStim(self.window, image='circle.gif', pos=mpos1)
-        marker_2= visual.ImageStim(self.window, image='star.jpg', pos=mpos2)
+        marker_1= visual.ImageStim(self.window, image=globvar.file_marker_1, pos=mpos1)
+        marker_2= visual.ImageStim(self.window, image=globvar.file_marker_2, pos=mpos2)
 
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
 
