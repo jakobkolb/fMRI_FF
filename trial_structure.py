@@ -2,7 +2,7 @@ import numpy as np
 from psychopy import core, visual, event, logging
 from trial_classes import trial
 import random
-import globvar
+import trial_parameters as globvar
 logging.console.setLevel(logging.CRITICAL)
 
 
@@ -10,8 +10,12 @@ logging.console.setLevel(logging.CRITICAL)
 #-----------------------------------------------------------------------------
 trial.ts = 1.5                                                  #time for one fmri measurement
 number_of_trials = 100                                          #obviously the number of trails to be taken
-spacing = [(-0.5,-0.2),(0.5,-0.2),(-0.5,0.6),(0.5,0.6),(0,0)]   #positions for objects on slides
-                                                                #marker_1, marker_2, stim_1, stim_2, fixation_cross
+spacing = [ (-0.5,-0.1),(0.5,-0.1),                             #positions for objects on slides
+            (-0.5,0.6),(0.5,0.6),                               #marker_1, marker_2, stim_1, stim_2,
+            (-0.5,-0.8),(0.5,-0.8),                              #reward_1, reward_2
+            (0,0)]        
+                                                                
+                                                                
 desired_delay_average = 2
 desired_baseline_average = 3
 #data arrays for trail parameters and user input and reaction time
@@ -52,9 +56,9 @@ while n<M:
         timing[i,2]-=1
         n+=1
 
-#difficulties for the current trial in the form [easy, hard] 
-difficulties =  np.zeros((number_of_trials,2))
-difficulties[:,0:2] = [1, 0.1]
+#difficulties for the current trial in the form [easy, reward for easy, hard, reward for hard] 
+difficulties =  np.zeros((number_of_trials,4))
+difficulties[:,0:4] = [1, 0.1, 0.1, 1]
 
 #deviation from standard order of elements on slide A and C
 inversions = np.zeros((number_of_trials,3))
