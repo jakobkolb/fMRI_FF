@@ -11,10 +11,12 @@
 #----------------------------------------------------------------------------
 #trial is activated by calling the self.run_trail() method.
 
-from psychopy import core, visual, event
+from psychopy import core, visual, sound, event
 import numpy as np
 import random
+import wave
 import trial_parameters as globvar
+from struct import pack
 class trial:
     'class to outline trial structure'
     trialCount = 0
@@ -148,15 +150,82 @@ class trial:
 
 
         elif self.name=='audio':
-            stim_1 = visual.TextStim(self.window, text='audiostim1', pos=spos1)
-            stim_2 = visual.TextStim(self.window, text='audiostim2', pos=spos2)
+            #we weather ru|lu or ba|da sould be right resp. left
+            sounds = [['ru','lu'],['ba','da']]
+            rd = range(3)
+            for i in range(3):
+                rd[i] = np.random.randint(0,2)
+            i_1 = rd[0]
+            i_2 = (rd[0]+1)%2
+            #and chose then, which of ru|lu and ba|da will be played
+            sound_1 = sounds[i_1][rd[1]]
+            sound_2 = sounds[i_2][rd[2]]
+            #then we open the according wav files
+            file_1 = wave.open(sound_1 + '.wav','r')
+            file_2 = wave.open(sound_2 + '.wav','r')
+            #and get their file details
+            #Returns a tuple (nchannels, sampwidth, framerate, nframes, comptype, compname)
+            file_1_parameters = file_1.getparams()
+            file_2_parameters = file_2.getparams()
+            print file_1_parameters
+            print file_2_parameters
+            #since the sound tracks will be combined, they must have the same length
+            sound_frames = min(file_1_parameters[3], file_2_parameters[3])
+            print sound_frames, file_1_parameters[3], file_2_parameters[3]
+            #read raw wav data from files
+            file_1_raw = file_1.readframes(sound_frames)
+            file_2_raw = file_2.readframes(sound_frames)
+            #unpack wav data to be able to work with it
+            file_1_data = np.frombuffer(file_1_raw, dtype='<i2')
+            file_2_data = np.frombuffer(file_2_raw, dtype='<i2')
+            #extract maximum amplitude from wav data
+            max_amp_file_1 = max(abs(file_1_data))
+            max_amp_file_2 = max(abs(file_2_data))
+            #create white noise
+            noise = np.random.randn(sound_frames)
+            #add noise to sound tracks
+            if self.flip[1] == 1:
+                noise_level_1 = self.dif_stim_1
+                noise_level_2 = self.dif_stim_2
+            elif self.flip[1] == -1:
+                noise_level_1 = self.dif_stim_2
+                noise_level_2 = self.dif_stim_1
+            stim_1_data = np.zeros((sound_frames))
+            stim_2_data = np.zeros((sound_frames))
+            for i in range(sound_frames):
+                stim_1_data[i] = (file_1_data[i]*(1-noise_level_1) + noise[i]*noise_level_1*max_amp_file_1)/2.
+                stim_2_data[i] = (file_2_data[i]*(1-noise_level_2) + noise[i]*noise_level_2*max_amp_file_2)/2.
+                #cut sound tracks if their combined amplitude exceeds the max_amplitude of the source file
+                if abs(stim_1_data[i]) > max_amp_file_1:
+                    sign_1 = file_1_data[i]/abs(file_1_data[i])
+                    stim_1_data[i] = max_amp_file_1*sign_1
+                if abs(stim_2_data[i]) > max_amp_file_2:
+                    sign_2 = file_2_data[i]/abs(file_2_data[i])
+                    stim_2_data[i] = max_amp_file_2*sign_2
+            #open output files
+            stim_file = wave.open('stim_file.wav', 'w')
+            stim_file.setparams((2,2,file_1_parameters[3],0,'NONE', 'not compressed'))
+            stim_sound_data = ''
+            for i in range(sound_frames):
+                stim_sound_data += pack('h', stim_1_data[i]) #track for left chanel
+                stim_sound_data += pack('h', stim_2_data[i]) #track for right chanel
+            stim_file.writeframes(stim_sound_data)
+            stim_file.close()
+            file_1.close()
+            file_2.close()
+
+            audit_stim = sound.Sound(value='stim_file.wav', sampleRate = file_1_parameters[3])
+             
+
             marker_1.draw()
             marker_2.draw()
-            stim_1.draw()
-            stim_2.draw()
             reward_1.draw()
             reward_2.draw()
             cross.draw()
+            self.window.flip()
+            audit_stim.play(loops = -1)
+            core.wait(self.time_stimulus)
+            audit_stim.stop()
 
         else :
             stim_1 = visual.TextStim(self.window, text='someotherstim1', pos=spos1)
@@ -356,7 +425,7 @@ class init:
                 difficulties[:,0:4] = [1,0.1]
             elif kind == 'audio':
                 difficulties = np.zeros((self.number_of_trials,2))
-                difficulties[:,0:4] = [1,0.1]
+                difficulties[:,0:4] = [0.5,0.2]
 
             #deviation from standard order of elements on slide A and C
             inversions = np.zeros((self.number_of_trials,3))
