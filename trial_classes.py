@@ -183,13 +183,14 @@ class trial:
             max_amp_file_2 = max(abs(file_2_data))
             #create white noise
             noise = np.random.randn(sound_frames)
-            #add noise to sound tracks
+            #switch noise levels on left and right chanal according to flip
             if self.flip[1] == 1:
                 noise_level_1 = self.dif_stim_1
                 noise_level_2 = self.dif_stim_2
             elif self.flip[1] == -1:
                 noise_level_1 = self.dif_stim_2
                 noise_level_2 = self.dif_stim_1
+            #ad noise to signals
             stim_1_data = np.zeros((sound_frames))
             stim_2_data = np.zeros((sound_frames))
             for i in range(sound_frames):
@@ -204,11 +205,14 @@ class trial:
                     stim_2_data[i] = max_amp_file_2*sign_2
             #open output files
             stim_file = wave.open('stim_file.wav', 'w')
+            #set output file parameters
             stim_file.setparams((2,2,file_1_parameters[3],0,'NONE', 'not compressed'))
+            #merge sound tracks for output and pack them to an appropriate data format
             stim_sound_data = ''
             for i in range(sound_frames):
                 stim_sound_data += pack('h', stim_1_data[i]) #track for left chanel
                 stim_sound_data += pack('h', stim_2_data[i]) #track for right chanel
+            #write data to file
             stim_file.writeframes(stim_sound_data)
             stim_file.close()
             file_1.close()
