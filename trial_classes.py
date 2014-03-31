@@ -35,9 +35,7 @@ class trial:
         self.pos_reward_2   = spacing[5]    #position of the prize for task 2
         self.pos_fixcross   = spacing[6]    #position of fixation cross
         self.dif_stim_1     = difficulties[0] #difficulty of stim_1
-        self.dif_stim_2     = difficulties[2] #difficulty of stim_2
-        self.reward_1       = difficulties[1] #relative reward for task 1
-        self.reward_2       = difficulties[3] #relative reward for task 2
+        self.dif_stim_2     = difficulties[1] #difficulty of stim_2
         self.time_stimulus  = timing[0]*trial.ts  #display time for stimulus
         self.time_delay_1   = timing[1]*trial.ts  #display time for first delay
         self.time_decision  = timing[2]*trial.ts  #display time for decision screen
@@ -51,7 +49,7 @@ class trial:
                 self.user_input[2], \
                 self.user_input[3], \
                 self.user_input[4] , \
-                self.tA, self.tB, self.tC, self.tD
+                self.tA, self.tB, self.tC, self.tD, self.tEnd
 
 
     def present_slide_A(self):
@@ -72,6 +70,7 @@ class trial:
                 (globvar.reward_easy[1] - globvar.reward_easy[0])*np.random.rand(),2)
         self.reward_2 = round(globvar.reward_hard[0] + 
                 (globvar.reward_hard[1] - globvar.reward_hard[0])*np.random.rand(),2)
+
         #reverse task position if flip[1] == -1. default is easy on the left, hard on the right
         if self.flip[1] == 1:
             spos1, rpos1 = self.pos_stim_1, self.pos_reward_1
@@ -88,11 +87,10 @@ class trial:
         #'dot' is for random dot movement, 'math' is for arithmetic task and 'noise' will be for noise task
         print self.name
         if self.name=='dot':
-            #difficulty and direction must be set up
-            possible_rdm_directions = [[0,'left'],[180,'right']]
-            print random.choice(possible_rdm_directions)
-            dot_direction_1, self.correct_answer_easy = random.choice(possible_rdm_directions)
-            dot_direction_2, self.correct_answer_hard = random.choice(possible_rdm_directions)
+            #randomly choose direction of rdm and according correct answer
+            dot_direction_1, self.correct_answer_easy = random.choice(globvar.possible_rdm_directions)
+            dot_direction_2, self.correct_answer_hard = random.choice(globvar.possible_rdm_directions)
+            #setup rdm coherences from difficulty levels
             dot_coherence_1, dot_coherence_2 = self.dif_stim_1, self.dif_stim_2
 
             stim_1 = visual.DotStim(
@@ -126,35 +124,28 @@ class trial:
                 core.wait(0.01)
                 
         elif self.name=='math':
-            #Ofset of numbers from absolute task position
-            offset = 0.1
-            relative_number_possitions=[(-offset, -offset),(offset,-offset),(offset,offset),(-offset,offset)]
-            numbers = np.zeros((2,4))
-            #Generation of numbers to sum over by the participant
+            #generate numbers for the actual arithmetic task
+            self.numbers_to_sum = np.zeros((4))
             for i in range(4):
-                numbers[0,i] = np.random.randint(1,21)
-                numbers[1,i] = np.random.randint(1,21)
-            #generate stimuli 
-            stim_1 = []
-            stim_2 = []
-            for i in range(4):
-                #calculate the positions of the numbers relative to the absolute task position
-                p1 = tuple(x+y for x,y in zip(spos1, relative_number_possitions[i]))
-                p2 = tuple(x+y for x,y in zip(spos2, relative_number_possitions[i]))
-                #add all numbers belonging to one task to one list.
-                stim_1.extend([visual.TextStim(self.window, text=`int(numbers[0,i])`, pos=p1)])
-                stim_2.extend([visual.TextStim(self.window, text=`int(numbers[1,i])`, pos=p2)])
-            #draw elements on slide
+                self.numbers_to_sum[i] = np.random.randint(1,21)
+            self.correct_answer = sum(self.numbers_to_sum)
+            #build intervals around the correct answer
+            easy_interval = '['+`int(self.correct_answer - self.dif_stim_1)`+' - '+`int(self.correct_answer + self.dif_stim_1)`+']'
+            hard_interval = '['+`int(self.correct_answer - self.dif_stim_2)`+' - '+`int(self.correct_answer + self.dif_stim_2)`+']'
+            #create stimuli for the intervals
+            stim_1 = visual.TextStim(self.window, text=easy_interval, pos=spos1)
+            stim_2 = visual.TextStim(self.window, text=hard_interval, pos=spos2)
+            #draw stimuli
+            stim_1.draw()
+            stim_2.draw()
             marker_1.draw()
             marker_2.draw()
-            #draw all numbers belonging to the tasks by iterating the list of numbers
-            [stim.draw() for stim in stim_1]
-            [stim.draw() for stim in stim_2]
             reward_1.draw()
             reward_2.draw()
             cross.draw()
             self.window.flip()
             core.wait(self.time_stimulus)
+
 
         elif self.name=='audio':
             stim_1 = visual.TextStim(self.window, text='audiostim1', pos=spos1)
@@ -216,22 +207,40 @@ class trial:
         user_active = False
         input_correct = False
         while timer.getTime()>=0:
-            for key in event.getKeys(keyList=['left','right']):
-                rt = time.getTime()-self.tC
-                if (self.flip[0]*self.flip[1]*self.flip[2]) == 1:
-                    if key == 'left':
-                        user_choice_dif, user_choice_reward = 'easy', self.reward_1
-                    elif key == 'right':
-                        user_choice_dif, user_choice_reward = 'hard', self.reward_2
-                elif (self.flip[0]*self.flip[1]*self.flip[2]) == -1:
-                    if key == 'left':
-                        user_choice_dif, user_choice_reward = 'hard', self.reward_2
-                    elif key == 'right':
-                        user_choice_dif, user_choice_reward = 'easy', self.reward_1
-                user_active = True
-                input_correc = True
-                self.user_input = [1,key,rt,user_choice_dif, user_choice_reward, input_correct]
-                break
+            for key in event.getKeys(keyList=['left','right', 'p', 'escape']):
+                if key in ['left', 'right']:
+                    rt = self.time.getTime()-self.tC
+                    if (self.flip[0]*self.flip[1]*self.flip[2]) == 1:
+                        if key == 'left':
+                            user_choice_dif, user_choice_reward = 'easy', self.reward_1
+                        elif key == 'right':
+                            user_choice_dif, user_choice_reward = 'hard', self.reward_2
+                    elif (self.flip[0]*self.flip[1]*self.flip[2]) == -1:
+                        if key == 'left':
+                            user_choice_dif, user_choice_reward = 'hard', self.reward_2
+                        elif key == 'right':
+                            user_choice_dif, user_choice_reward = 'easy', self.reward_1
+                    user_active = True
+                    input_correc = True
+                    self.user_input = [1,key,rt,user_choice_dif, user_choice_reward, input_correct]
+                    break
+                elif key in ['escape']:
+                    print 'aborting'
+                    message = visual.TextStim(win=self.window, text='you pressed escape. \n The experiment will now end.')
+                    message.draw()
+                    self.window.flip()
+                    core.wait(3)
+                    self.window.close()
+                    core.quit()
+                elif key in ['p']:
+                    pause = True
+                    message = visual.TextStim(win=self.window, text='the experiment is paused \n press p again to continue')
+                    message.draw()
+                    self.window.flip()
+                    while pause == True:
+                        for key in event.getKeys(keyList=['p']):
+                            if key == 'p':
+                                pause = False
             if user_active == False:
                 self.user_input = [0,'none',-78,'none', 0.0, input_correct]
 #Baseline slide
@@ -247,31 +256,140 @@ class trial:
 
     def run_trial(self):
         #start time counter for the trial
-        time = core.MonotonicClock()
+        self.time = core.MonotonicClock()
         #get time of presentation of task slide from time counter
-        self.tA = time.getTime()
+        self.tA = self.time.getTime()
         #present stimulus slide for time self.time_stimulus
         self.present_slide_A()
         #delay delay slide
         self.define_slide_B()
         #get time for presentation of delay slide
-        self.tB = time.getTime()
+        self.tB = self.time.getTime()
         #show delay slide
         self.window.flip()
         #wait for delay time
         core.wait(self.time_delay_1)
         #response slide shows motor markers and records user input.
         #get start time
-        self.tC = time.getTime()
+        self.tC = self.time.getTime()
         self.present_slide_C()
         #draw baseline slide
         self.define_slide_D()
         #get time of baseline slide presentation
-        self.tD = time.getTime()
+        self.tD = self.time.getTime()
         #show baseline slide
         self.window.flip()
         #wait for baseline slide presentation
         core.wait(self.time_delay_2)
         #get time of end of trial
-        self.tEnd = time.getTime()
+        self.tEnd = self.time.getTime()
+
+
+#----------------------------------------------------------------------------
+#this class can be used to generate the parameters for the trials on an experiment.
+#input is:
+#modus              :the modus for the next trials (math, dot or audio)
+#number_of_trials   :the number of the next trials of type modus
+#max_rep            :the maximum number of repetitions in the parameter series allowed
+#dif_easy, dif_hard :the difficulty levels for the next trials
+#mean_delay_average :mean time of delay slide in units of fmri 
+#mean_baseline_average:mean time of baseline slide in units of fmri
+#output is timing, difficulties and inversions for the next series of trials
+
+#----------------------------------------------------------------------------
+class init:
+    'class to randomize trial parameters'
+    blub = 1
+
+    def __init__(self, modus, number_of_trials, max_rep, dif_easy, dif_hard, mean_delay_average, mean_baseline_average):
+        self.desired_delay_average      = mean_delay_average
+        self.desired_baseline_average   = mean_baseline_average
+        self.max_rep                    = max_rep
+        self.number_of_trials           = number_of_trials
+        self.dif_easy                   = dif_easy
+        self.dif_hard                   = dif_hard
+        self.mode                       = modus
+        
+    def rand_trial_parameters(self, kind):
+
+        too_many_repetitions =True
+
+        while too_many_repetitions == True:
+
+            #time for slides A, B, C, D
+            timing = np.zeros((self.number_of_trials,4))
+            timing[:,0:4] = [3,2,1,2]
+            for i in range(self.number_of_trials):
+                timing[i,1] = np.random.randint(1,5)
+                timing[i,3] = np.random.randint(2,5)
+            #adjust means of timing for delay and baseline slides to fit the desired time averages
+            Estimated_delay_time  = sum(timing[:,1])/self.number_of_trials
+            M   = int(self.number_of_trials*(Estimated_delay_time - self.desired_delay_average))
+            n=1
+            while n<M:
+                #pick random time in the trial sequence
+                i = np.random.randint(self.number_of_trials)
+                #only change the value, if it is not equal to the time before and after
+                if timing[i,1]-1!=timing[(i+1)%self.number_of_trials,1] \
+                        or timing[i,1]-1!=timing[(i-1)%self.number_of_trials,1] \
+                        and timing[i,1]-1>0:
+                    timing[i,1]-=1
+                    n+=1
+            Estimated_baseline_time  = sum(timing[:,3])/self.number_of_trials
+            M   = int(self.number_of_trials*(Estimated_baseline_time - self.desired_baseline_average))
+            n=1
+            while n<M:
+                i = np.random.randint(self.number_of_trials-1)
+                if timing[i,3]-1!=timing[(i+1)%self.number_of_trials,3] \
+                        or timing[i,3]-1!=timing[(i-1)%self.number_of_trials,3] \
+                        and timing[i,3]-2>0:
+                    timing[i,3]-=1
+                    n+=1
+
+            #difficulties for the current trial in the form [easy, hard], units for difficulty of different trials have to be
+            #set according to participants performance.
+            if kind == 'math':
+                difficulties = np.zeros((self.number_of_trials,2))
+                difficulties[:,0:4] = [10, 1]
+            elif kind == 'dot':
+                difficulties = np.zeros((self.number_of_trials,2))
+                difficulties[:,0:4] = [1,0.1]
+            elif kind == 'audio':
+                difficulties = np.zeros((self.number_of_trials,2))
+                difficulties[:,0:4] = [1,0.1]
+
+            #deviation from standard order of elements on slide A and C
+            inversions = np.zeros((self.number_of_trials,3))
+            inversions[:,0:3] = [0,0,0]
+            for i in range(self.number_of_trials):
+                inversions[i,0] = random.choice([-1,1])
+                inversions[i,1] = random.choice([-1,1])
+                inversions[i,2] = random.choice([-1,1])
+
+            #check if the maximum number of repetitions satisfies max_rep
+            too_many_repetitions = False
+            for i in range(self.number_of_trials - self.max_rep):
+                same_1 = True
+                same_2 = True
+                same_3 = True
+                same_4 = True
+                same_5 = True
+                for j in range(i,i+self.max_rep):
+                    if inversions[j,0] != inversions[i,0]:
+                        same_1 = False
+                    if  inversions[j,1] != inversions[i,1]:
+                        same_2 = False
+                    if inversions[j,2] != inversions[i,2]:
+                        same_3 = False
+                    if  timing[j,1] != timing[i,1]:
+                        same_4 = False
+                    if timing[j,3] != timing[i,3]:
+                        same_5 = False
+                if same_1 == True or same_2 == True or same_3 == True or same_4 == True or same_5 == True :
+                        too_many_repetitions = True
+                        break
+
+        print 'mean delay time is ', sum(timing[:,1])/self.number_of_trials
+        print 'mean baseline time is ', sum(timing[:,3])/self.number_of_trials
+        return timing, difficulties, inversions
 
