@@ -9,6 +9,7 @@ logging.console.setLevel(logging.CRITICAL)
 #general parameters for the experiment:
 #-----------------------------------------------------------------------------
 trial.ts = 1.5                                                  #time for one fmri measurement
+trial_modi = ['audio','math','dot']                             #modi of trials to be taken
 number_of_trials = 5                                           #the number of trails per modus to be taken
 max_rep = 4                                                     #maximum number of repetitions in randomization
 dif_hard = 0.1                                                  #difficulty for hard trials
@@ -43,7 +44,7 @@ message1.draw()
 win.flip()
 core.wait(1)
 #iterate over the different trial modi
-for kind in ['math','dot','audio']:
+for kind in trial_modi:
 #for kind in ['audio']:
     #write a short note to the output file, if a new trial modus starts
     print>>output_file, `number_of_trials`+ ' ' + kind + ' trials'
