@@ -217,15 +217,15 @@ class trial:
             stim_file.close()
             file_1.close()
             file_2.close()
-
+            #generate sound stimulus
             audit_stim = sound.Sound(value='stim_file.wav', sampleRate = file_1_parameters[3])
-             
-
+            #draw other objects
             marker_1.draw()
             marker_2.draw()
             reward_1.draw()
             reward_2.draw()
             cross.draw()
+            #flip window and play sound
             self.window.flip()
             audit_stim.play(loops = -1)
             core.wait(self.time_stimulus)
