@@ -20,7 +20,7 @@ from struct import pack
 class trial:
     'class to outline trial structure'
     trialCount = 0
-    ts = 1.5
+    ts = globvar.fmri_time
 
 
 #initialization of the trial parameters
@@ -374,13 +374,11 @@ class init:
     'class to randomize trial parameters'
     blub = 1
 
-    def __init__(self, modus, number_of_trials, max_rep, dif_easy, dif_hard, mean_delay_average, mean_baseline_average):
-        self.desired_delay_average      = mean_delay_average
-        self.desired_baseline_average   = mean_baseline_average
-        self.max_rep                    = max_rep
-        self.number_of_trials           = number_of_trials
-        self.dif_easy                   = dif_easy
-        self.dif_hard                   = dif_hard
+    def __init__(self, modus):
+        self.desired_delay_average      = globvar.mean_delay_average
+        self.desired_baseline_average   = globvar.mean_baseline_average
+        self.max_rep                    = globvar.max_rep
+        self.number_of_trials           = globvar.number_of_trials
         self.mode                       = modus
         
     def rand_trial_parameters(self, kind):
@@ -423,13 +421,13 @@ class init:
             #set according to participants performance.
             if kind == 'math':
                 difficulties = np.zeros((self.number_of_trials,2))
-                difficulties[:,0:4] = [10, 1]
+                difficulties[:,0:2] = globvar.math_trial_interval
             elif kind == 'dot':
                 difficulties = np.zeros((self.number_of_trials,2))
-                difficulties[:,0:4] = [1,0.1]
+                difficulties[:,0:2] = globvar.dot_motion_trial_coherence
             elif kind == 'audio':
                 difficulties = np.zeros((self.number_of_trials,2))
-                difficulties[:,0:4] = [0.5,0.2]
+                difficulties[:,0:2] = globvar.audio_trial_stn_ratio
 
             #deviation from standard order of elements on slide A and C
             inversions = np.zeros((self.number_of_trials,3))

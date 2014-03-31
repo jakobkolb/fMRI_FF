@@ -6,26 +6,11 @@ import trial_parameters as globvar
 logging.console.setLevel(logging.CRITICAL)
 
 
-#general parameters for the experiment:
-#-----------------------------------------------------------------------------
-trial.ts = 1.5                                                  #time for one fmri measurement
-trial_modi = ['audio','math','dot']                             #modi of trials to be taken
-number_of_trials = 5                                           #the number of trails per modus to be taken
-max_rep = 4                                                     #maximum number of repetitions in randomization
-dif_hard = 0.1                                                  #difficulty for hard trials
-dif_easy = 1                                                    #difficulty for easy trials
-mean_delay_average = 2                                          #desired delay average in fmri time units
-mean_baseline_average = 3
-spacing = [ (-0.5,-0.1),(0.5,-0.1),                             #positions for objects on slides
-            (-0.5,0.5),(0.5,0.5),                               #stim_1, stim_2, marker_1, marker_2, 
-            (-0.5,-0.7),(0.5,-0.7),                              #reward_1, reward_2, fixation_cross
-            (0,0)]        
-
 #the following block sets up the timing and positioning of the trial features
 #-----------------------------------------------------------------------------
 print 'trial setup'
 
-init_parameters = init('choice', number_of_trials, max_rep, dif_easy, dif_hard, mean_delay_average, mean_baseline_average)
+init_parameters = init('choice')
 #-----------------------------------------------------------------------------
 
 
@@ -42,17 +27,17 @@ print>>output_file, '#trial_type, user_input?, user_input, rt, user_choice, acco
 message1 = visual.TextStim(win=win, text='the first slide presents two differently difficult \n options and the reward that can be gained by choosing one of them. \n the third slide lets you choose one of the options \n according to the marker signs using the left and right arrow keys. \n The experiment can be paused by pressing p or be ended by pressing escape on this slide.')
 message1.draw()
 win.flip()
-core.wait(1)
+core.wait(3)
 #iterate over the different trial modi
-for kind in trial_modi:
+for kind in globvar.trial_modi:
 #for kind in ['audio']:
     #write a short note to the output file, if a new trial modus starts
-    print>>output_file, `number_of_trials`+ ' ' + kind + ' trials'
+    print>>output_file, `globvar.number_of_trials`+ ' ' + kind + ' trials'
     #generate trial parameters for the upcomming trials
     timing, difficulties, inversions = init_parameters.rand_trial_parameters(kind)
-    for i in range(0,number_of_trials):
+    for i in range(0,globvar.number_of_trials):
 
-        current_trial = trial(kind, win, timing[i,:], spacing, difficulties[i,:], inversions[i,:])
+        current_trial = trial(kind, win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
         current_trial.run_trial()
         #data from trial.getData() is kind, user_active[y,n], input_key, reaction_time, difficulty_chosen, t_slide_a, t_slide_b, t_slide_c, t_slide_d, t_end
         print 'stimuli type is ', current_trial.name
