@@ -56,7 +56,7 @@ class trial:
                 round(self.user_input[7],4)
                 
     def getTiming(self):
-        return  self.tA, self.tB, self.tC, self.tD, self.tEnd, self.tR
+        return  self.name, self.tA, self.tB, self.tC, self.tD, self.tEnd, self.tR
 
     def present_slide_A(self):
         #reverse position of markers if flip[0] == -1

@@ -29,7 +29,7 @@ print>>output_user_interaction, '#difficulty refers to the exptected participant
 output_trial_timing = open('choice_study_trial_timing.txt','w')
 print>>output_trial_timing, '#this file contains the data for timing of each trial'
 print>>output_trial_timing, '#output format is the following'
-print>>output_trial_timing, '#time_slide_A, time_slide_B, time_slide_C, time_slide_D, time_trial_end, user_reaction_time'
+print>>output_trial_timing, '#trial_type, time_slide_A, time_slide_B, time_slide_C, time_slide_D, time_trial_end, user_reaction_time'
 #-----------------------------------------------------------------------------
 
 #preparation of trials: short introduction and explanation slide
