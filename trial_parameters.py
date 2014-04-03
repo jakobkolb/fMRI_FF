@@ -33,13 +33,17 @@ spacing = [ (-0.5,-0.1),(0.5,-0.1),
 #values for reward for easy and hard tasks in the form [min_reward,max_reward] in Euro
 reward_hard = [0.5,1]          
 reward_easy = [0,0.5]
-#difficulty settings for different trial modi in the form [easy, hard]
+#difficulty settings for different trial modi in the form [easy, hard] 
+#and corresponding expected participant performance for [easy, hard]
 #for math trial:size of interval for correct answer
 math_trial_interval         = [10,3]
+math_trial_difficulty       = [0.8,0.2]
 #for rdm trial:coherence of the dot motion values between 0 and 1
 dot_motion_trial_coherence  = [0.8,0.2]
+dot_motion_diffuculty       = [0.8,0.2]
 #for the audio trial: signal to noise ratio. 0.2 means 20% noise, 80% signal(i.e. ba da ru lu)
 audio_trial_stn_ratio       = [0.2,0.4]
+audio_trial_difficulty      = [0.8,0.8]
 #-----------------------------------------------------------------------------
 
 

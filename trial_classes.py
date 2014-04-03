@@ -50,9 +50,13 @@ class trial:
                 self.user_input[1], \
                 self.user_input[2], \
                 self.user_input[3], \
-                self.user_input[4] , \
-                self.tA, self.tB, self.tC, self.tD, self.tEnd
-
+                round(self.user_input[4],4), \
+                self.user_input[5], \
+                self.user_input[6], \
+                round(self.user_input[7],4)
+                
+    def getTiming(self):
+        return  self.tA, self.tB, self.tC, self.tD, self.tEnd, self.tR
 
     def present_slide_A(self):
         #reverse position of markers if flip[0] == -1
@@ -206,7 +210,7 @@ class trial:
             #open output files
             stim_file = wave.open('stim_file.wav', 'w')
             #set output file parameters
-            stim_file.setparams((2,2,file_1_parameters[3],0,'NONE', 'not compressed'))
+            stim_file.setparams((2,2,file_1_parameters[2],0,'NONE', 'not compressed'))
             #merge sound tracks for output and pack them to an appropriate data format
             stim_sound_data = ''
             for i in range(sound_frames):
@@ -253,6 +257,16 @@ class trial:
 
     def present_slide_C(self):
         print 'present slide C'
+        #load actual difficulties from trial_parameters according to trial modus
+        if self.name == 'dot':
+            expected_performace_easy = globvar.dot_motion_difficulty[0]
+            expected_performace_hard = globvar.dot_motion_difficulty[1]
+        elif self.name == 'audio':
+            expected_performace_easy = globvar.audio_trial_difficulty[0]
+            expected_performace_hard = globvar.audio_trial_difficulty[1]
+        elif self.name == 'math':
+            expected_performace_easy = globvar.math_trial_difficulty[0]
+            expected_performace_hard = globvar.math_trial_difficulty[1]
         self.window.clearBuffer()
         if self.flip[2] == 1:
             mpos1 = self.pos_marker_1
@@ -282,20 +296,26 @@ class trial:
         while timer.getTime()>=0:
             for key in event.getKeys(keyList=['left','right', 'p', 'escape']):
                 if key in ['left', 'right']:
-                    rt = self.time.getTime()-self.tC
+                    self.tR = self.time.getTime()-self.tC
                     if (self.flip[0]*self.flip[1]*self.flip[2]) == 1:
                         if key == 'left':
-                            user_choice_dif, user_choice_reward = 'easy', self.reward_1
+                            accepted_choice_dif, accepted_choice_reward = expected_performace_easy, self.reward_1
+                            rejected_choice_dif, rejected_choice_reward = expected_performace_hard, self.reward_2
                         elif key == 'right':
-                            user_choice_dif, user_choice_reward = 'hard', self.reward_2
+                            accepted_choice_dif, accepted_choice_reward = expected_performace_hard, self.reward_2
+                            rejected_choice_dif, rejected_choice_reward = expected_performace_easy, self.reward_1
                     elif (self.flip[0]*self.flip[1]*self.flip[2]) == -1:
                         if key == 'left':
-                            user_choice_dif, user_choice_reward = 'hard', self.reward_2
+                            accepted_choice_dif, accepted_choice_reward = expected_performace_hard, self.reward_2
+                            rejected_choice_dif, rejected_choice_reward = expected_performace_easy, self.reward_1
                         elif key == 'right':
-                            user_choice_dif, user_choice_reward = 'easy', self.reward_1
+                            accepted_choice_dif, accepted_choice_reward = expected_performace_easy, self.reward_1
+                            rejected_choice_dif, rejected_choice_reward = expected_performace_hard, self.reward_2
                     user_active = True
                     input_correc = True
-                    self.user_input = [1,key,rt,user_choice_dif, user_choice_reward, input_correct]
+                    self.user_input = [1,key,
+                            accepted_choice_dif, accepted_choice_reward, accepted_choice_dif*accepted_choice_reward, 
+                            rejected_choice_dif, rejected_choice_reward, rejected_choice_dif*rejected_choice_reward]
                     break
                 elif key in ['escape']:
                     print 'aborting'
@@ -306,6 +326,7 @@ class trial:
                     self.window.close()
                     core.quit()
                 elif key in ['p']:
+                    self.tR = -78
                     pause = True
                     message = visual.TextStim(win=self.window, text='the experiment is paused \n press p again to continue')
                     message.draw()
@@ -315,7 +336,8 @@ class trial:
                             if key == 'p':
                                 pause = False
             if user_active == False:
-                self.user_input = [0,'none',-78,'none', 0.0, input_correct]
+                self.tR = -78
+                self.user_input = [0,'none',0,0,0,0,0,0]
 #Baseline slide
 
     def define_slide_D(self):
