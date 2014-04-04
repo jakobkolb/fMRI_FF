@@ -23,8 +23,10 @@ win = visual.Window()
 #write a short readme to the output file
 output_user_interaction = open('choice_study_user_input.txt','w')
 print>>output_user_interaction, '#output format is the following'
-print>>output_user_interaction, '#trial_type, user_active?, user_input_key, accepted difficulty, accepted reward, accepted dif*reward, rejected difficulty, rejected reward, rejected dif*reward'
+print>>output_user_interaction, '#trial_type, user_active?, user_input_key, accepted difficulty, accepted reward, accepted dif*reward, rejected difficulty, rejected reward, rejected dif*reward, inversions'
 print>>output_user_interaction, '#difficulty refers to the exptected participant performance as set in trial_parameters'
+print>>output_user_interaction, '#the three columns of inversions refer to the inversion of the default arrangement of the displayed elements. 1 means default arrangement, -1 means inverse of default arrangement.'
+print>>output_user_interaction, '#1) the task markers where by default marker_1 is left and marker_2 is right 2) to the task difficulty where by default easy is left and hard is right and 3) to the response markers where again by default marker_1 is left and marker_2 is right'
 
 output_trial_timing = open('choice_study_trial_timing.txt','w')
 print>>output_trial_timing, '#this file contains the data for timing of each trial'
@@ -62,7 +64,7 @@ for kind in globvar.trial_modi:
         print 'user difficulty choice is ', current_trial.user_input[2]
         print 'user reaction time is ', current_trial.tR
         #save data from each trial, timing of slides, user input and inversions of stimuli
-        print>>output_user_interaction, str(current_trial.getData()).strip('()')
+        print>>output_user_interaction, str(current_trial.getData()).strip('()'), str(inversions[i,:]).strip('[]')
         print>>output_trial_timing, str(current_trial.getTiming()).strip('()')
         del current_trial
 
