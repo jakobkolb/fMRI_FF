@@ -6,7 +6,7 @@
 #time for one fmri measurement
 fmri_time = 1.5                                                 
 #modi of trials to be taken
-trial_modi = ['audio','math','dot']                             
+trial_modi = ['dot', 'audio','math','dot']                             
 #the number of trails per modus to be taken
 number_of_trials = 5                                            
 #maximum number of repetitions in randomization
@@ -40,7 +40,7 @@ math_trial_interval         = [10,3]
 math_trial_difficulty       = [0.8,0.2]
 #for rdm trial:coherence of the dot motion values between 0 and 1
 dot_motion_trial_coherence  = [0.8,0.2]
-dot_motion_diffuculty       = [0.8,0.2]
+dot_motion_difficulty       = [0.8,0.2]
 #for the audio trial: signal to noise ratio. 0.2 means 20% noise, 80% signal(i.e. ba da ru lu)
 audio_trial_stn_ratio       = [0.2,0.4]
 audio_trial_difficulty      = [0.8,0.8]
