@@ -6,9 +6,9 @@
 #time for one fmri measurement
 fmri_time = 1.5                                                 
 #modi of trials to be taken
-trial_modi = ['dot', 'audio','math','dot']                             
+trial_modi = ['dot','audio','math','dot']                             
 #the number of trails per modus to be taken
-number_of_trials = 5                                            
+number_of_trials = 1                                            
 #maximum number of repetitions in randomization
 max_rep = 4                                                     
 #desired delay average in fmri time units
@@ -19,9 +19,9 @@ mean_baseline_average = 3
             #stim_1, stim_2
 spacing = [ (-0.5,-0.1),(0.5,-0.1),                             
             #marker_1, marker_2
-            (-0.5,0.5),(0.5,0.5),                               
+            (-0.5,0.37),(0.5,0.37),                               
             #reward_1, reward_2
-            (-0.5,-0.7),(0.5,-0.7),                             
+            (-0.5,-0.5),(0.5,-0.5),                             
             #fixation_cross
             (0,0)]
 #-----------------------------------------------------------------------------
@@ -44,6 +44,15 @@ dot_motion_difficulty       = [0.8,0.2]
 #for the audio trial: signal to noise ratio. 0.2 means 20% noise, 80% signal(i.e. ba da ru lu)
 audio_trial_stn_ratio       = [0.2,0.4]
 audio_trial_difficulty      = [0.8,0.8]
+#-----------------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------------
+#settings concerning eye tracking
+#-----------------------------------------------------------------------------
+tracker_connected = False
+tracker_ip = "100.1.1.1"
+
 #-----------------------------------------------------------------------------
 
 

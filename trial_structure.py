@@ -6,8 +6,19 @@ from psychopy import core, visual, event, logging
 from trial_classes import trial, init
 import random
 import trial_parameters as globvar
+import pylink
 logging.console.setLevel(logging.CRITICAL)
 #-----------------------------------------------------------------------------
+
+#initialize the eyetracker
+#-----------------------------------------------------------------------------
+print 'initialize eyetracker'
+if globvar.tracker_connected == True:
+    eye_tracker = pylink.EyeLink(globvar.tracker_ip)
+elif globvar.tracker_connected == False:
+    eye_tracker = pylink.EyeLink(None)
+#-----------------------------------------------------------------------------
+
 
 
 #initialize the class for generation of trial parameters
@@ -64,6 +75,7 @@ for kind in globvar.trial_modi:
         print 'user difficulty choice is ', current_trial.user_input[2]
         print 'user reaction time is ', current_trial.tR
         #save data from each trial, timing of slides, user input and inversions of stimuli
+        print>>output_user_interaction, str(current_trial.premature_input).strip('[]')
         print>>output_user_interaction, str(current_trial.getData()).strip('()'), str(inversions[i,:]).strip('[]')
         print>>output_trial_timing, str(current_trial.getTiming()).strip('()')
         del current_trial

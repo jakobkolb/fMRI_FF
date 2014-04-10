@@ -247,11 +247,23 @@ class trial:
 
 #Delay slide without interactivity
 
-    def define_slide_B(self):
+    def present_slide_B(self):
+        timer = core.CountdownTimer(self.time_delay_1)
         print 'define slide B'
         self.window.clearBuffer()
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
         cross.draw()
+        event.clearEvents()
+        self.premature_input = []
+        active = False
+        self.window.flip()
+        while timer.getTime() > 0:
+            for key in event.getKeys():
+                self.premature_input = ['premature input',key]
+                active = True
+        if active == False:
+            self.premature_input = ['no input during delay','']
+
 
 #Decision slide presented during recording of user input
 
@@ -277,7 +289,7 @@ class trial:
         marker_1= visual.ImageStim(self.window, image=globvar.file_marker_1, pos=mpos1)
         marker_2= visual.ImageStim(self.window, image=globvar.file_marker_2, pos=mpos2)
 
-        cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
+        cross   = visual.TextStim(self.window, color='red', colorSpace='rgb', text='+', pos=self.pos_fixcross)
 
         marker_1.draw()
         marker_2.draw()
@@ -356,14 +368,10 @@ class trial:
         self.tA = self.time.getTime()
         #present stimulus slide for time self.time_stimulus
         self.present_slide_A()
-        #delay delay slide
-        self.define_slide_B()
         #get time for presentation of delay slide
         self.tB = self.time.getTime()
-        #show delay slide
-        self.window.flip()
-        #wait for delay time
-        core.wait(self.time_delay_1)
+        #delay delay slide
+        self.present_slide_B()
         #response slide shows motor markers and records user input.
         #get start time
         self.tC = self.time.getTime()
@@ -413,31 +421,31 @@ class init:
             timing = np.zeros((self.number_of_trials,4))
             timing[:,0:4] = [3,2,1,2]
             for i in range(self.number_of_trials):
-                timing[i,1] = np.random.randint(1,5)
+                timing[i,1] = np.random.randint(1,4)
                 timing[i,3] = np.random.randint(2,5)
             #adjust means of timing for delay and baseline slides to fit the desired time averages
-            Estimated_delay_time  = sum(timing[:,1])/self.number_of_trials
-            M   = int(self.number_of_trials*(Estimated_delay_time - self.desired_delay_average))
-            n=1
-            while n<M:
-                #pick random time in the trial sequence
-                i = np.random.randint(self.number_of_trials)
-                #only change the value, if it is not equal to the time before and after
-                if timing[i,1]-1!=timing[(i+1)%self.number_of_trials,1] \
-                        or timing[i,1]-1!=timing[(i-1)%self.number_of_trials,1] \
-                        and timing[i,1]-1>0:
-                    timing[i,1]-=1
-                    n+=1
-            Estimated_baseline_time  = sum(timing[:,3])/self.number_of_trials
-            M   = int(self.number_of_trials*(Estimated_baseline_time - self.desired_baseline_average))
-            n=1
-            while n<M:
-                i = np.random.randint(self.number_of_trials-1)
-                if timing[i,3]-1!=timing[(i+1)%self.number_of_trials,3] \
-                        or timing[i,3]-1!=timing[(i-1)%self.number_of_trials,3] \
-                        and timing[i,3]-2>0:
-                    timing[i,3]-=1
-                    n+=1
+            #Estimated_delay_time  = sum(timing[:,1])/self.number_of_trials
+           #M   = int(self.number_of_trials*(Estimated_delay_time - self.desired_delay_average))
+           #n=1
+           #while n<M:
+           #    #pick random time in the trial sequence
+           #    i = np.random.randint(self.number_of_trials)
+           #    #only change the value, if it is not equal to the time before and after
+           #    if timing[i,1]-1!=timing[(i+1)%self.number_of_trials,1] \
+           #            or timing[i,1]-1!=timing[(i-1)%self.number_of_trials,1] \
+           #            and timing[i,1]-1>0:
+           #        timing[i,1]-=1
+           #        n+=1
+           #Estimated_baseline_time  = sum(timing[:,3])/self.number_of_trials
+           #M   = int(self.number_of_trials*(Estimated_baseline_time - self.desired_baseline_average))
+           #n=1
+           #while n<M:
+           #    i = np.random.randint(self.number_of_trials-1)
+           #    if timing[i,3]-1!=timing[(i+1)%self.number_of_trials,3] \
+           #            or timing[i,3]-1!=timing[(i-1)%self.number_of_trials,3] \
+           #            and timing[i,3]-2>0:
+           #        timing[i,3]-=1
+           #        n+=1
 
             #difficulties for the current trial in the form [easy, hard], units for difficulty of different trials have to be
             #set according to participants performance.
