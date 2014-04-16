@@ -13,12 +13,43 @@ logging.console.setLevel(logging.CRITICAL)
 #initialize the eyetracker
 #-----------------------------------------------------------------------------
 print 'initialize eyetracker'
+
+#connect to tracker, if needed
 if globvar.tracker_connected == True:
     eye_tracker = pylink.EyeLink(globvar.tracker_ip)
 elif globvar.tracker_connected == False:
     eye_tracker = pylink.EyeLink(None)
-#-----------------------------------------------------------------------------
 
+#open output file
+pylink.getEYELINK().openDataFile(globvar.edf_filename)
+
+
+#send screen size to tracker
+pylink.getEYELINK().sendCommand("screen_pixel_coords =  0 0 %d %d" %(globvar.window_size[0], globvar.window_size[1]))
+pylink.getEYELINK().sendMessage("screen_pixel_coords =  0 0 %d %d" %(globvar.window_size[0], globvar.window_size[1]))
+
+#get tracker version and tracker software version
+tracker_software_ver = 0
+eyelink_ver = pylink.getEYELINK().getTrackerVersion()
+if eyelink_ver == 3:
+	tvstr = pylink.getEYELINK().getTrackerVersionString()
+	vindex = tvstr.find("EYELINK CL")
+	tracker_software_ver = int(float(tvstr[(vindex + len("EYELINK CL")):].strip()))
+print 'tracker version', eyelink_ver
+print 'tracker software v', tracker_software_ver
+
+# set tracker output file contents 
+pylink.getEYELINK().sendCommand("file_event_filter = LEFT,RIGHT,FIXATION,SACCADE,BLINK,MESSAGE,BUTTON")
+if tracker_software_ver>=4:
+	pylink.getEYELINK().sendCommand("file_sample_data  = LEFT,RIGHT,GAZE,AREA,GAZERES,STATUS,HTARGET")
+else:
+	pylink.getEYELINK().sendCommand("file_sample_data  = LEFT,RIGHT,GAZE,AREA,GAZERES,STATUS")
+#do tracker setup
+if eyelink_ver != 0:
+    eye_tracker.doTrackerSetup()
+eye_tracker.setOfflineMode()
+
+#-----------------------------------------------------------------------------
 
 
 #initialize the class for generation of trial parameters
@@ -30,7 +61,7 @@ init_parameters = init('choice')
 
 #preparation of trials: prepare output to file
 #-----------------------------------------------------------------------------
-win = visual.Window()
+win = visual.Window(size=globvar.window_size)
 #write a short readme to the output file
 output_user_interaction = open('choice_study_user_input.txt','w')
 print>>output_user_interaction, '#output format is the following'
@@ -50,7 +81,7 @@ print>>output_trial_timing, '#trial_type, time_slide_A, time_slide_B, time_slide
 message1 = visual.TextStim(win=win, text='the first slide presents two differently difficult \n options and the reward that can be gained by choosing one of them. \n the third slide lets you choose one of the options \n according to the marker signs using the left and right arrow keys. \n The experiment can be paused by pressing p or be ended by pressing escape on this slide.')
 message1.draw()
 win.flip()
-core.wait(3)
+core.wait(0.1)
 #-----------------------------------------------------------------------------
 
 #iterate over the different trial modi and generate trial parameters accordingly
@@ -66,6 +97,10 @@ for kind in globvar.trial_modi:
 #run the actual trials and record user input
 #-----------------------------------------------------------------------------
     for i in range(0,globvar.number_of_trials):
+        if eyelink_ver != 0:
+            if eye_tracker.isConnected()==False:
+                print 'SCANNER CONNECTION LOST'
+            pylink.getEYELINK().startRecording(1, 1, 0, 0)
 
         current_trial = trial(kind, win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
         current_trial.run_trial()
@@ -79,9 +114,11 @@ for kind in globvar.trial_modi:
         print>>output_user_interaction, str(current_trial.getData()).strip('()'), str(inversions[i,:]).strip('[]')
         print>>output_trial_timing, str(current_trial.getTiming()).strip('()')
         del current_trial
-
+        if eyelink_ver !=0:
+            pylink.getEYELINK().stopRecording()
 win.close()
-output_file.close()
+output_user_interaction.close()
+output_trial_timing.close()
 #-----------------------------------------------------------------------------
 
 
@@ -94,4 +131,12 @@ output_file.close()
 #evaluate user input and save relevant data
 #-----------------------------------------------------------------------------
 
+if pylink.getEYELINK() != None:
+   # File transfer and cleanup!
+    pylink.getEYELINK().setOfflineMode();                          
+    pylink.msecDelay(500);                 
 
+    #Close the file and transfer it to Display PC
+    pylink.getEYELINK().closeDataFile()
+    pylink.getEYELINK().receiveDataFile(globvar.edf_filename, globvar.edf_filename)
+    pylink.getEYELINK().close();

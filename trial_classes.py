@@ -67,6 +67,7 @@ class trial:
             mpos1 = self.pos_marker_2
             mpos2 = self.pos_marker_1
         #define marker stimuli with files defined in globvar.py
+        print globvar.file_marker_1, mpos1
         marker_1= visual.ImageStim(self.window, image=globvar.file_marker_1, pos=mpos1)
         marker_2= visual.ImageStim(self.window, image=globvar.file_marker_2, pos=mpos2)
         #define fixation cross

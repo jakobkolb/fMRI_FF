@@ -5,10 +5,10 @@
 #-----------------------------------------------------------------------------
 #time for one fmri measurement
 fmri_time = 1.5                                                 
-#modi of trials to be taken
-trial_modi = ['dot','audio','math','dot']                             
+#modi of trials to be taken, out of math, dot, audio
+trial_modi = ['dot', 'audio', 'math']                             
 #the number of trails per modus to be taken
-number_of_trials = 1                                            
+number_of_trials = 2                                            
 #maximum number of repetitions in randomization
 max_rep = 4                                                     
 #desired delay average in fmri time units
@@ -24,6 +24,8 @@ spacing = [ (-0.5,-0.1),(0.5,-0.1),
             (-0.5,-0.5),(0.5,-0.5),                             
             #fixation_cross
             (0,0)]
+#window size in pixels (width, hight)
+window_size = (800,600)
 #-----------------------------------------------------------------------------
 
 
@@ -52,6 +54,7 @@ audio_trial_difficulty      = [0.8,0.8]
 #-----------------------------------------------------------------------------
 tracker_connected = False
 tracker_ip = "100.1.1.1"
+edf_filename = "trial_eyetracker_output.edf"
 
 #-----------------------------------------------------------------------------
 
@@ -60,8 +63,8 @@ tracker_ip = "100.1.1.1"
 #some other settings..
 #-----------------------------------------------------------------------------
 #paths for marker files. relative paths must be given, if files are not in the same folder
-file_marker_1  = 'star.jpg'
-file_marker_2  = 'square.jpg'
+file_marker_1  = 'star.png'
+file_marker_2  = 'square.png'
 #possible directions for random dot moovement with angle and according arrow key
 possible_rdm_directions = [[0,'right'],[180,'left']]
 #-----------------------------------------------------------------------------
