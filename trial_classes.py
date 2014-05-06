@@ -38,10 +38,15 @@ class trial:
         self.pos_fixcross   = spacing[6]    #position of fixation cross
         self.dif_stim_1     = difficulties[0] #difficulty of stim_1
         self.dif_stim_2     = difficulties[1] #difficulty of stim_2
-        self.time_stimulus  = timing[0]*trial.ts  #display time for stimulus
-        self.time_delay_1   = timing[1]*trial.ts  #display time for first delay
-        self.time_decision  = timing[2]*trial.ts  #display time for decision screen
-        self.time_delay_2   = timing[3]*trial.ts  #display time for baseline
+        self.time_stim_1    = timing[0]*trial.ts  #display time for stimulus
+        self.time_stim_2    = timing[1]*trial.ts  #display time for stimulus
+        self.time_break_1   = timing[2]*trial.ts  #display time for first delay
+        self.time_break_2   = timing[3]*trial.ts  #display time for first delay
+        self.time_options   = timing[4]*trial.ts  #display time for decision screen
+        self.time_delay_1   = timing[5]*trial.ts  #display time for first delay
+        self.time_delay_2   = timing[6]*trial.ts  #display time for first delay
+        self.time_decision  = timing[7]*trial.ts  #display time for decision screen
+        self.time_baseline  = timing[8]*trial.ts  #display time for baseline
         trial.trialCount    += 1
 #define different slides for the trial (A: Stimulus, B: Delay, C: Decision, D: Baseline)
     def getData(self):
@@ -58,37 +63,17 @@ class trial:
     def getTiming(self):
         return  self.name, self.tA, self.tB, self.tC, self.tD, self.tEnd, self.tR
 
-    def present_slide_A(self):
-        #reverse position of markers if flip[0] == -1
-        if self.flip[0] == 1:
-            mpos1 = self.pos_marker_1
-            mpos2 = self.pos_marker_2
-        elif self.flip[0] == -1:
-            mpos1 = self.pos_marker_2
-            mpos2 = self.pos_marker_1
-        #define marker stimuli with files defined in globvar.py
-        print globvar.file_marker_1, mpos1
-        marker_1= visual.ImageStim(self.window, image=globvar.file_marker_1, pos=mpos1)
-        marker_2= visual.ImageStim(self.window, image=globvar.file_marker_2, pos=mpos2)
+    def present_stimuli(self):
+        #reverse task position and time if flip[1] == -1. default is easy first on the left, hard second on the right
+        if self.flip[1] == 1:
+            stime1, spos1 = 0, self.pos_stim_1
+            stime2, spos2 = 1, self.pos_stim_2
+        elif self.flip[1] == -1:
+            stime1, spos1 = 1, self.pos_stim_2
+            stime2, spos2 = 0, self.pos_stim_1
+
         #define fixation cross
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
-        #calculate random reward (equally distributed in intervals defined in globvar.py)
-        self.reward_1 = round(globvar.reward_easy[0] + 
-                (globvar.reward_easy[1] - globvar.reward_easy[0])*np.random.rand(),2)
-        self.reward_2 = round(globvar.reward_hard[0] + 
-                (globvar.reward_hard[1] - globvar.reward_hard[0])*np.random.rand(),2)
-
-        #reverse task position if flip[1] == -1. default is easy on the left, hard on the right
-        if self.flip[1] == 1:
-            spos1, rpos1 = self.pos_stim_1, self.pos_reward_1
-            spos2, rpos2 = self.pos_stim_2, self.pos_reward_2
-        elif self.flip[1] == -1:
-            spos1, rpos1 = self.pos_stim_2, self.pos_reward_2
-            spos2, rpos2 = self.pos_stim_1, self.pos_reward_1
-        #define reward stimuli according to the possitions of the easy and hard task
-        reward_1 = visual.TextStim(self.window, text= `round(self.reward_1,2)` + ' Eur', pos=rpos1)
-        reward_2 = visual.TextStim(self.window, text= `round(self.reward_2,2)` + ' Eur', pos=rpos2)
-
         #define stimuli here as stim_1 and stim_2 according to self.name
         #stim_1 is easy, stim_2 is hard
         #'dot' is for random dot movement, 'math' is for arithmetic task and 'noise' will be for noise task
@@ -99,34 +84,36 @@ class trial:
             dot_direction_2, self.correct_answer_hard = random.choice(globvar.possible_rdm_directions)
             #setup rdm coherences from difficulty levels
             dot_coherence_1, dot_coherence_2 = self.dif_stim_1, self.dif_stim_2
-
-            stim_1 = visual.DotStim(
+            stim = []
+            stim.extend([visual.DotStim(
                     #constant parameters for dot motion
-                    self.window, color=(1.0,1.0,1.0), nDots=500, fieldShape='circle', fieldSize=0.7, 
+                    self.window, color=(1.0,1.0,1.0), nDots=500, fieldShape='circle', fieldSize=4*globvar.size, 
                     dotLife=100, signalDots='same', noiseDots='direction', speed=0.002, 
                     #variable parameters for dot motion
                     coherence=dot_coherence_1,
                     dir=dot_direction_1,
                     fieldPos=spos1
-                    )
-            stim_2 = visual.DotStim(
+                    )])
+            stim.extend([visual.DotStim(
                     #constant parameters for dot motion
-                    self.window, color=(1.0,1.0,1.0), nDots=500, fieldShape='circle', fieldSize=0.7,
+                    self.window, color=(1.0,1.0,1.0), nDots=500, fieldShape='circle', fieldSize=4*globvar.size,
                     dotLife=100, signalDots='same', noiseDots='direction', speed=0.002, 
                     #variable parameters for dot motion
                     coherence=dot_coherence_2,
                     dir=dot_direction_2,
                     fieldPos=spos2
-                    )
-            dot_timer = core.CountdownTimer(self.time_stimulus)
-            while (dot_timer.getTime()>=0):
-                stim_1.draw()
-                stim_2.draw()
+                    )])
+            t1 = self.time_stim_1+self.time_stim_2+self.time_break_1+self.time_break_2
+            dot_timer = core.CountdownTimer(t1)
+            while True :
+                t = t1 - dot_timer.getTime()
+                if (t<=0):
+                    break
+                if (0<t and t<self.time_stim_1):
+                    stim[stime1].draw()
+                elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
+                    stim[stime2].draw()
                 cross.draw()
-                marker_1.draw()
-                marker_2.draw()
-                reward_1.draw()
-                reward_2.draw()
                 self.window.flip()
                 core.wait(0.01)
                 
@@ -137,24 +124,61 @@ class trial:
                 self.numbers_to_sum[i] = np.random.randint(1,21)
             self.correct_answer = sum(self.numbers_to_sum)
             #build intervals around the correct answer
-            easy_interval = '['+`int(self.correct_answer - self.dif_stim_1)`+' - '+`int(self.correct_answer + self.dif_stim_1)`+']'
-            hard_interval = '['+`int(self.correct_answer - self.dif_stim_2)`+' - '+`int(self.correct_answer + self.dif_stim_2)`+']'
+            easy_interval = '+/-'+`int(self.dif_stim_1)`
+            hard_interval = '+/-'+`int(self.dif_stim_2)`
             #create stimuli for the intervals
-            stim_1 = visual.TextStim(self.window, text=easy_interval, pos=spos1)
-            stim_2 = visual.TextStim(self.window, text=hard_interval, pos=spos2)
-            #draw stimuli
-            stim_1.draw()
-            stim_2.draw()
-            marker_1.draw()
-            marker_2.draw()
-            reward_1.draw()
-            reward_2.draw()
-            cross.draw()
-            self.window.flip()
-            core.wait(self.time_stimulus)
+#            stim_1 = visual.TextStim(self.window, text=easy_interval, pos=spos1)
+#            stim_2 = visual.TextStim(self.window, text=hard_interval, pos=spos2)
 
+            #Ofset of numbers from absolute task position
+            offset = globvar.size
+            relative_number_possitions=[(-offset, -offset),(offset,-offset),(offset,offset),(-offset,offset)]
+            numbers = np.zeros((2,4))
+            #Generation of numbers to sum over by the participant
+            for i in range(4):
+                numbers[0,i] = np.random.randint(1,21)
+                numbers[1,i] = np.random.randint(1,21)
+            #generate stimuli 
+            stim_1 = []
+            stim_2 = []
+            for i in range(4):
+                #calculate the positions of the numbers relative to the absolute task position
+                p1 = tuple(x+y for x,y in zip(spos1, relative_number_possitions[i]))
+                p2 = tuple(x+y for x,y in zip(spos2, relative_number_possitions[i]))
+                #add all numbers belonging to one task to one list.
+                stim_1.extend([visual.TextStim(self.window, text=`int(numbers[0,i])`, pos=p1)])
+                stim_2.extend([visual.TextStim(self.window, text=`int(numbers[1,i])`, pos=p2)])
+
+            stim_1.extend([visual.TextStim(self.window, text=easy_interval, color='red', 
+                colorSpace='rgb', pos = (0,1.7*offset))])
+            stim_2.extend([visual.TextStim(self.window, text=hard_interval, color='red', 
+                colorSpace='rgb', pos = (0,1.7*offset))])
+            #draw elements on slide
+
+            #draw all numbers belonging to the tasks by iterating the list of numbers
+            
+            t1 = self.time_stim_1+self.time_stim_2+self.time_break_1+self.time_break_2
+            dot_timer = core.CountdownTimer(t1)
+            while True :
+                t = t1 - dot_timer.getTime()
+                if (t<=0):
+                    break
+                if stime1 == 0 :
+                    if (0<t and t<self.time_stim_1):
+                        [stim.draw() for stim in stim_1]
+                    elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
+                        [stim.draw() for stim in stim_2]
+                elif stime1 == 1 :
+                    if (0<t and t<self.time_stim_1):
+                        [stim.draw() for stim in stim_2]
+                    elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
+                        [stim.draw() for stim in stim_1]
+                cross.draw()
+                self.window.flip()
+                core.wait(0.01)
 
         elif self.name=='audio':
+            stim_files=['stim_file_1.wav','stim_file_2.wav']
             #we weather ru|lu or ba|da sould be right resp. left
             sounds = [['ru','lu'],['ba','da']]
             rd = range(3)
@@ -209,47 +233,125 @@ class trial:
                     sign_2 = file_2_data[i]/abs(file_2_data[i])
                     stim_2_data[i] = max_amp_file_2*sign_2
             #open output files
-            stim_file = wave.open('stim_file.wav', 'w')
+            stim_file_1 = wave.open(stim_files[0], 'w')
+            stim_file_2 = wave.open(stim_files[1], 'w')
             #set output file parameters
-            stim_file.setparams((2,2,file_1_parameters[2],0,'NONE', 'not compressed'))
+            stim_file_1.setparams((2,2,file_1_parameters[2],0,'NONE', 'not compressed'))
+            stim_file_2.setparams((2,2,file_1_parameters[2],0,'NONE', 'not compressed'))
             #merge sound tracks for output and pack them to an appropriate data format
-            stim_sound_data = ''
+            stim_sound_data_1 = ''
+            stim_sound_data_2 = ''
             for i in range(sound_frames):
-                stim_sound_data += pack('h', stim_1_data[i]) #track for left chanel
-                stim_sound_data += pack('h', stim_2_data[i]) #track for right chanel
+                stim_sound_data_1 += pack('h', stim_1_data[i]) #track for file_1
+                stim_sound_data_1 += pack('h', stim_1_data[i]) #track for file_1
+                stim_sound_data_2 += pack('h', stim_2_data[i]) #track for file_2
+                stim_sound_data_2 += pack('h', stim_2_data[i]) #track for file_2
             #write data to file
-            stim_file.writeframes(stim_sound_data)
-            stim_file.close()
+            stim_file_1.writeframes(stim_sound_data_1)
+            stim_file_2.writeframes(stim_sound_data_2)
+            stim_file_1.close()
+            stim_file_2.close()
             file_1.close()
             file_2.close()
             #generate sound stimulus
-            audit_stim = sound.Sound(value='stim_file.wav', sampleRate = file_1_parameters[3])
+            audit_stim_1 = sound.Sound(value=stim_files[stime1], sampleRate = file_1_parameters[3])
+            audit_stim_2 = sound.Sound(value=stim_files[stime2], sampleRate = file_1_parameters[3])
+            speaker_symbol = visual.ImageStim(self.window, image=globvar.speaker_symbol, pos=(0,globvar.size), size = 0.2)
             #draw other objects
-            marker_1.draw()
-            marker_2.draw()
-            reward_1.draw()
-            reward_2.draw()
             cross.draw()
             #flip window and play sound
             self.window.flip()
-            audit_stim.play(loops = -1)
-            core.wait(self.time_stimulus)
-            audit_stim.stop()
-
+            t1 = self.time_stim_1+self.time_stim_2+self.time_break_1+self.time_break_2
+            dot_timer = core.CountdownTimer(t1)
+            while True :
+                t = t1 - dot_timer.getTime()
+                if (t>=t1):
+                    break
+                if (0<t and t<self.time_stim_1):
+                    audit_stim_1.play(loops = -1)
+                    cross.draw()
+                    speaker_symbol.draw()
+                elif (self.time_stim_1<t and t<self.time_stim_1 + self.time_break_1):
+                    audit_stim_1.stop()
+                elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
+                    audit_stim_2.play(loops = -1)
+                    cross.draw()
+                    speaker_symbol.draw()
+                elif (self.time_stim_1 + self.time_break_1 + self.time_stim_2<t):
+                    audit_stim_2.stop()
+                self.window.flip()
         else :
             stim_1 = visual.TextStim(self.window, text='someotherstim1', pos=spos1)
             stim_2 = visual.TextStim(self.window, text='someotherstim2', pos=spos2)
-            marker_1.draw()
-            marker_2.draw()
             stim_1.draw()
             stim_2.draw()
             cross.draw()
 
+#Option slide with markers and rewards
+    def present_options(self):
+        #reverse position of markers if flip[0] == -1
+        if self.flip[0] == 1:
+            mpos1 = self.pos_marker_1
+            mpos2 = self.pos_marker_2
+        elif self.flip[0] == -1:
+            mpos1 = self.pos_marker_2
+            mpos2 = self.pos_marker_1
+        #reverse reward position if flip[1] == -1. default is easy on the left, hard on the right
+        if self.flip[1] == 1:
+            rpos1 = self.pos_reward_1
+            rpos2 = self.pos_reward_2
+        elif self.flip[1] == -1:
+            rpos1 = self.pos_reward_2
+            rpos2 = self.pos_reward_1
 
-#Delay slide without interactivity
+        #define marker stimuli with files defined in globvar.py
+        print globvar.file_marker_1, mpos1
+        marker_1= visual.ImageStim(self.window, image=globvar.file_marker_1, pos=mpos1)
+        marker_2= visual.ImageStim(self.window, image=globvar.file_marker_2, pos=mpos2)
+        #define fixation cross
+        cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
+        #calculate random reward (equally distributed in intervals defined in globvar.py)
+        self.reward_1 = round(globvar.reward_easy[0] + 
+                (globvar.reward_easy[1] - globvar.reward_easy[0])*np.random.rand(),2)
+        self.reward_2 = round(globvar.reward_hard[0] + 
+                (globvar.reward_hard[1] - globvar.reward_hard[0])*np.random.rand(),2)
+        #define reward stimuli according to the possitions of the easy and hard task
+        eur = u"\u20AC"
+        reward_1 = visual.TextStim(self.window, text= `round(self.reward_1,2)` + eur, pos=rpos1)
+        reward_2 = visual.TextStim(self.window, text= `round(self.reward_2,2)` + eur, pos=rpos2)
 
-    def present_slide_B(self):
+        marker_1.draw()
+        marker_2.draw()
+        reward_1.draw()
+        reward_2.draw()
+        cross.draw()
+        self.window.flip()
+        core.wait(self.time_options)
+
+#Delay slide 1 without interactivity
+
+    def present_delay_1(self):
         timer = core.CountdownTimer(self.time_delay_1)
+        print 'define slide B'
+        self.window.clearBuffer()
+        cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
+        cross.draw()
+        event.clearEvents()
+        self.premature_input = []
+        active = False
+        self.window.flip()
+        while timer.getTime() > 0:
+            for key in event.getKeys():
+                self.premature_input = ['premature input',key]
+                active = True
+        if active == False:
+            self.premature_input = ['no input during delay','']
+
+
+#Delay slide 2 without interactivity
+
+    def present_delay_2(self):
+        timer = core.CountdownTimer(self.time_delay_2)
         print 'define slide B'
         self.window.clearBuffer()
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
@@ -268,7 +370,7 @@ class trial:
 
 #Decision slide presented during recording of user input
 
-    def present_slide_C(self):
+    def present_response(self):
         print 'present slide C'
         #load actual difficulties from trial_parameters according to trial modus
         if self.name == 'dot':
@@ -353,38 +455,47 @@ class trial:
                 self.user_input = [0,'none',0,0,0,0,0,0]
 #Baseline slide
 
-    def define_slide_D(self):
+    def present_baseline(self):
         print 'define slide D'
         self.window.clearBuffer()
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
-
         cross.draw()
+        self.window.flip()
+        core.wait(self.time_baseline)
 
 #Method to run trial i.e. define slides, show for certain time, record user input. Store data.
 
     def run_trial(self):
         #start time counter for the trial
         self.time = core.MonotonicClock()
+#------------------------------------
         #get time of presentation of task slide from time counter
         self.tA = self.time.getTime()
         #present stimulus slide for time self.time_stimulus
-        self.present_slide_A()
+        self.present_stimuli()
+#------------------------------------
         #get time for presentation of delay slide
         self.tB = self.time.getTime()
-        #delay delay slide
-        self.present_slide_B()
+        #first delay slide
+        self.present_delay_1()
+#------------------------------------
+        #show choice options and rewards
+        self.present_options()
+#------------------------------------
+        #second delay slide
+        self.present_delay_2()
+#------------------------------------
         #response slide shows motor markers and records user input.
         #get start time
         self.tC = self.time.getTime()
-        self.present_slide_C()
-        #draw baseline slide
-        self.define_slide_D()
-        #get time of baseline slide presentation
+        #present slide
+        self.present_response()
+#------------------------------------
+        #slide for baseline time
+        #get time of baseline slide
         self.tD = self.time.getTime()
-        #show baseline slide
-        self.window.flip()
-        #wait for baseline slide presentation
-        core.wait(self.time_delay_2)
+        #present baseline slide
+        self.present_baseline()
         #get time of end of trial
         self.tEnd = self.time.getTime()
 
@@ -418,12 +529,15 @@ class init:
 
         while too_many_repetitions == True:
 
-            #time for slides A, B, C, D
-            timing = np.zeros((self.number_of_trials,4))
-            timing[:,0:4] = [3,2,1,2]
+            #time for slides
+            timing = np.zeros((self.number_of_trials,9))
+            timing[:,0:9] = [globvar.time_stim_1,globvar.time_stim_2,globvar.time_break_1,globvar.time_break_2,
+                    globvar.time_options,globvar.time_delay_1[0],globvar.time_delay_2[0],
+                    globvar.time_response,globvar.time_baseline[0]]
             for i in range(self.number_of_trials):
-                timing[i,1] = np.random.randint(1,4)
-                timing[i,3] = np.random.randint(2,5)
+                timing[i,5] = np.random.randint(globvar.time_delay_1[0],globvar.time_delay_1[1])
+                timing[i,6] = np.random.randint(globvar.time_delay_2[0],globvar.time_delay_2[1])
+                timing[i,8] = np.random.randint(globvar.time_baseline[0],globvar.time_baseline[1])
             #adjust means of timing for delay and baseline slides to fit the desired time averages
             #Estimated_delay_time  = sum(timing[:,1])/self.number_of_trials
            #M   = int(self.number_of_trials*(Estimated_delay_time - self.desired_delay_average))
