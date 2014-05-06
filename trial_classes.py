@@ -17,6 +17,7 @@ import random
 import wave
 import trial_parameters as globvar
 from struct import pack
+import pylink
 class trial:
     'class to outline trial structure'
     trialCount = 0
@@ -61,7 +62,7 @@ class trial:
                 round(self.user_input[7],4)
                 
     def getTiming(self):
-        return  self.name, self.tA, self.tB, self.tC, self.tD, self.tEnd, self.tR
+        return  self.name, self.t_stimuli, self.t_delay_1, self.t_options, self.t_delay_2, self.t_response, self.t_baseline, self.t_end, self.tR
 
     def present_stimuli(self):
         #reverse task position and time if flip[1] == -1. default is easy first on the left, hard second on the right
@@ -470,34 +471,36 @@ class trial:
         self.time = core.MonotonicClock()
 #------------------------------------
         #get time of presentation of task slide from time counter
-        self.tA = self.time.getTime()
+        self.t_stimuli = self.time.getTime()
         #present stimulus slide for time self.time_stimulus
         self.present_stimuli()
 #------------------------------------
         #get time for presentation of delay slide
-        self.tB = self.time.getTime()
+        self.t_delay_1 = self.time.getTime()
         #first delay slide
         self.present_delay_1()
 #------------------------------------
         #show choice options and rewards
+        self.t_options = self.time.getTime()
         self.present_options()
 #------------------------------------
         #second delay slide
+        self.t_delay_2 = self.time.getTime()
         self.present_delay_2()
 #------------------------------------
         #response slide shows motor markers and records user input.
         #get start time
-        self.tC = self.time.getTime()
+        self.t_response = self.time.getTime()
         #present slide
         self.present_response()
 #------------------------------------
         #slide for baseline time
         #get time of baseline slide
-        self.tD = self.time.getTime()
+        self.t_baseline = self.time.getTime()
         #present baseline slide
         self.present_baseline()
         #get time of end of trial
-        self.tEnd = self.time.getTime()
+        self.t_end = self.time.getTime()
 
 
 #----------------------------------------------------------------------------
@@ -564,13 +567,17 @@ class init:
 
             #difficulties for the current trial in the form [easy, hard], units for difficulty of different trials have to be
             #set according to participants performance.
+            print kind
             if kind == 'math':
+                print 'math diff'
                 difficulties = np.zeros((self.number_of_trials,2))
                 difficulties[:,0:2] = globvar.math_trial_interval
             elif kind == 'dot':
+                print 'dot diff'
                 difficulties = np.zeros((self.number_of_trials,2))
                 difficulties[:,0:2] = globvar.dot_motion_trial_coherence
             elif kind == 'audio':
+                print 'audio diff'
                 difficulties = np.zeros((self.number_of_trials,2))
                 difficulties[:,0:2] = globvar.audio_trial_stn_ratio
 

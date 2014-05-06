@@ -61,7 +61,7 @@ init_parameters = init('choice')
 
 #preparation of trials: prepare output to file
 #-----------------------------------------------------------------------------
-win = visual.Window(size=globvar.window_size)
+win = visual.Window(size=globvar.window_size, fullscr=globvar.full_screen)
 #write a short readme to the output file
 output_user_interaction = open('choice_study_user_input.txt','w')
 print>>output_user_interaction, '#output format is the following'
