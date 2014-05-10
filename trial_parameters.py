@@ -5,11 +5,11 @@
 #-----------------------------------------------------------------------------
 #time for one fmri measurement
 fmri_time = 1.5                                     
-#Block Structure given as [number of blocks, blocks per trial]
+#Number settings for block structure given as [number of blocks, blocks per trial]
 blocks = [3,10]
 #modi of trials to be taken, out of math, dot, audio
 trial_modi = ['audio','math', 'dot']                             
-#maximum number of repetitions in randomization
+#maximum number of repetitions in randomization i.e max same trial types, equal delay times etc in a row
 max_rep = 4                                                
 #spacing of the objects on slides
 size = 0.2
@@ -58,19 +58,30 @@ mean_baseline_average = 3
 #settings for difficulties of tasks and monetary reward
 #-----------------------------------------------------------------------------
 #values for reward for easy and hard tasks in the form [min_reward,max_reward] in Euro
-reward_hard = [0.5,1]          
-reward_easy = [0,0.5]
+#settigs for small and large difficulty gap are marked with _s and _l respectively
+reward_hard_s = [0.5,0.6]          
+reward_easy_s = [0.3,0.5]
+reward_hard_l = [0.8,1]          
+reward_easy_l = [0,0.2]
 #difficulty settings for different trial modi in the form [easy, hard] 
 #and corresponding expected participant performance for [easy, hard]
+#Settings for large difficulty difference trials are marked with _l, 
+#Settings for small difficylty difference trials are marked with _s
 #for math trial:size of interval for correct answer
-math_trial_interval         = [10,3]
-math_trial_difficulty       = [0.8,0.2]
+math_trial_interval_l       = [10,3]
+math_trial_difficulty_l     = [0.8,0.2]
+math_trial_interval_s       = [7,5]
+math_trial_difficulty_s     = [0.6,0.4]
 #for rdm trial:coherence of the dot motion values between 0 and 1
-dot_motion_trial_coherence  = [0.8,0.2]
-dot_motion_difficulty       = [0.8,0.2]
+dot_motion_trial_coherence_l  = [0.8,0.2]
+dot_motion_difficulty_l       = [0.8,0.2]
+dot_motion_trial_coherence_s  = [0.6,0.4]
+dot_motion_difficulty_s       = [0.6,0.4]
 #for the audio trial: signal to noise ratio. 0.2 means 20% noise, 80% signal(i.e. ba da ru lu)
-audio_trial_stn_ratio       = [0.2,0.4]
-audio_trial_difficulty      = [0.8,0.8]
+audio_trial_stn_ratio_l       = [0.1,0.4]
+audio_trial_difficulty_l      = [0.8,0.2]
+audio_trial_stn_ratio_s       = [0.2,0.3]
+audio_trial_difficulty_s      = [0.6,0.4]
 #-----------------------------------------------------------------------------
 
 

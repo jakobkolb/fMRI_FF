@@ -26,8 +26,9 @@ class trial:
 
 #initialization of the trial parameters
 
-    def __init__(self, kind, win, timing, spacing, difficulties, inversions):
+    def __init__(self, kind, gap, win, timing, spacing, difficulties, inversions):
         self.name           = kind
+        self.diff_gap       = gap
         self.window         = win
         self.flip           = inversions
         self.pos_stim_1     = spacing[0]    #position of right stimulus
@@ -78,7 +79,6 @@ class trial:
         #define stimuli here as stim_1 and stim_2 according to self.name
         #stim_1 is easy, stim_2 is hard
         #'dot' is for random dot movement, 'math' is for arithmetic task and 'noise' will be for noise task
-        print self.name
         if self.name=='dot':
             #randomly choose direction of rdm and according correct answer
             dot_direction_1, self.correct_answer_easy = random.choice(globvar.possible_rdm_directions)
@@ -312,11 +312,17 @@ class trial:
         #define fixation cross
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
         #calculate random reward (equally distributed in intervals defined in globvar.py)
-        self.reward_1 = round(globvar.reward_easy[0] + 
-                (globvar.reward_easy[1] - globvar.reward_easy[0])*np.random.rand(),2)
-        self.reward_2 = round(globvar.reward_hard[0] + 
-                (globvar.reward_hard[1] - globvar.reward_hard[0])*np.random.rand(),2)
-        #define reward stimuli according to the possitions of the easy and hard task
+        if self.diff_gap == 'small':
+            self.reward_1 = round(globvar.reward_easy_s[0] + 
+                    (globvar.reward_easy_s[1] - globvar.reward_easy_s[0])*np.random.rand(),2)
+            self.reward_2 = round(globvar.reward_hard_s[0] + 
+                    (globvar.reward_hard_s[1] - globvar.reward_hard_s[0])*np.random.rand(),2)
+        if self.diff_gap == 'large':
+            self.reward_1 = round(globvar.reward_easy_l[0] + 
+                    (globvar.reward_easy_l[1] - globvar.reward_easy_l[0])*np.random.rand(),2)
+            self.reward_2 = round(globvar.reward_hard_l[0] + 
+                    (globvar.reward_hard_l[1] - globvar.reward_hard_l[0])*np.random.rand(),2)
+        #define reward stimuli according to the possitions of the easy and hard_l task
         eur = u"\u20AC"
         reward_1 = visual.TextStim(self.window, text= `round(self.reward_1,2)` + eur, pos=rpos1)
         reward_2 = visual.TextStim(self.window, text= `round(self.reward_2,2)` + eur, pos=rpos2)
@@ -374,15 +380,26 @@ class trial:
     def present_response(self):
         print 'present slide C'
         #load actual difficulties from trial_parameters according to trial modus
-        if self.name == 'dot':
-            expected_performace_easy = globvar.dot_motion_difficulty[0]
-            expected_performace_hard = globvar.dot_motion_difficulty[1]
-        elif self.name == 'audio':
-            expected_performace_easy = globvar.audio_trial_difficulty[0]
-            expected_performace_hard = globvar.audio_trial_difficulty[1]
-        elif self.name == 'math':
-            expected_performace_easy = globvar.math_trial_difficulty[0]
-            expected_performace_hard = globvar.math_trial_difficulty[1]
+        if self.diff_gap == 'small':
+            if self.name == 'dot':
+                expected_performace_easy = globvar.dot_motion_difficulty_s[0]
+                expected_performace_hard = globvar.dot_motion_difficulty_s[1]
+            elif self.name == 'audio':
+                expected_performace_easy = globvar.audio_trial_difficulty_s[0]
+                expected_performace_hard = globvar.audio_trial_difficulty_s[1]
+            elif self.name == 'math':
+                expected_performace_easy = globvar.math_trial_difficulty_s[0]
+                expected_performace_hard = globvar.math_trial_difficulty_s[1]
+        if self.diff_gap == 'large':
+            if self.name == 'dot':
+                expected_performace_easy = globvar.dot_motion_difficulty_l[0]
+                expected_performace_hard = globvar.dot_motion_difficulty_l[1]
+            elif self.name == 'audio':
+                expected_performace_easy = globvar.audio_trial_difficulty_l[0]
+                expected_performace_hard = globvar.audio_trial_difficulty_l[1]
+            elif self.name == 'math':
+                expected_performace_easy = globvar.math_trial_difficulty_l[0]
+                expected_performace_hard = globvar.math_trial_difficulty_l[1]
         self.window.clearBuffer()
         if self.flip[2] == 1:
             mpos1 = self.pos_marker_1
@@ -565,21 +582,30 @@ class init:
 
             #difficulties for the current trial in the form [easy, hard], units for difficulty of different trials have to be
             #set according to participants performance.
+            diff_gap = []
+            for i in range(self.number_of_trials):
+                diff_gap.append(random.choice(['small', 'large']))
+
             kind = []
             for i in range(self.number_of_trials):
                 kind.append(random.choice(globvar.trial_modi))
 
             difficulties = np.zeros((self.number_of_trials,2))
             for i in range(self.number_of_trials):
-                if kind[i] == 'math':
-                    difficulties = np.zeros((self.number_of_trials,2))
-                    difficulties[:,0:2] = globvar.math_trial_interval
-                elif kind[i] == 'dot':
-                    difficulties = np.zeros((self.number_of_trials,2))
-                    difficulties[:,0:2] = globvar.dot_motion_trial_coherence
-                elif kind[i] == 'audio':
-                    difficulties = np.zeros((self.number_of_trials,2))
-                    difficulties[:,0:2] = globvar.audio_trial_stn_ratio
+                if diff_gap[i] == 'small':
+                    if kind[i] == 'math':
+                        difficulties[i,0:2] = globvar.math_trial_interval_s
+                    elif kind[i] == 'dot':
+                        difficulties[i,0:2] = globvar.dot_motion_trial_coherence_s
+                    elif kind[i] == 'audio':
+                        difficulties[i,0:2] = globvar.audio_trial_stn_ratio_s
+                if diff_gap[i] == 'large':
+                    if kind[i] == 'math':
+                        difficulties[i,0:2] = globvar.math_trial_interval_l
+                    elif kind[i] == 'dot':
+                        difficulties[i,0:2] = globvar.dot_motion_trial_coherence_l
+                    elif kind[i] == 'audio':
+                        difficulties[i,0:2] = globvar.audio_trial_stn_ratio_l
 
             #deviation from standard order of elements on slide A and C
             inversions = np.zeros((self.number_of_trials,3))
@@ -623,5 +649,5 @@ class init:
 
         print 'mean delay time is ', sum(timing[:,1])/self.number_of_trials
         print 'mean baseline time is ', sum(timing[:,3])/self.number_of_trials
-        return timing, difficulties, inversions, kind
+        return timing, difficulties, inversions, kind, diff_gap
 

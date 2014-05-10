@@ -91,7 +91,7 @@ for block in range(globvar.blocks[0]):
     print>>output_user_interaction, 'start block ' + `block`
     print>>output_trial_timing, 'start block ' + `block`
     #generate trial parameters for the upcomming trials
-    timing, difficulties, inversions, kind = init_parameters.rand_trial_parameters()
+    timing, difficulties, inversions, kind, diff_gap = init_parameters.rand_trial_parameters()
 #-----------------------------------------------------------------------------
 
 #run the actual trials and record user input
@@ -102,12 +102,12 @@ for block in range(globvar.blocks[0]):
                 print 'SCANNER CONNECTION LOST'
             pylink.getEYELINK().startRecording(1, 1, 0, 0)
         #set trial parameters
-        current_trial = trial(kind[i], win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
+        current_trial = trial(kind[i], diff_gap[i], win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
         #run trial
         current_trial.run_trial()
         #data from trial.getData() is kind, user_active[y,n], input_key, difficulty_chosen, reward_chosen, dif*rew, 
         #                                                                difficulty_rejected, reward_rejected, dif*rew
-        print 'stimuli type is ', current_trial.name
+        print 'stimuli type is ', current_trial.name, 'difficuly gap is ', diff_gap[i]
         print 'user difficulty choice is ', current_trial.user_input[2]
         print 'user reaction time is ', current_trial.tR
         #save data from each trial, timing of slides, user input and inversions of stimuli
