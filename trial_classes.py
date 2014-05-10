@@ -108,7 +108,7 @@ class trial:
             dot_timer = core.CountdownTimer(t1)
             while True :
                 t = t1 - dot_timer.getTime()
-                if (t<=0):
+                if (t>=t1):
                     break
                 if (0<t and t<self.time_stim_1):
                     stim[stime1].draw()
@@ -162,7 +162,7 @@ class trial:
             dot_timer = core.CountdownTimer(t1)
             while True :
                 t = t1 - dot_timer.getTime()
-                if (t<=0):
+                if (t>=t1):
                     break
                 if stime1 == 0 :
                     if (0<t and t<self.time_stim_1):
@@ -412,7 +412,7 @@ class trial:
         while timer.getTime()>=0:
             for key in event.getKeys(keyList=['left','right', 'p', 'escape']):
                 if key in ['left', 'right']:
-                    self.tR = self.time.getTime()-self.tC
+                    self.tR = self.time.getTime()-self.t_response
                     if (self.flip[0]*self.flip[1]*self.flip[2]) == 1:
                         if key == 'left':
                             accepted_choice_dif, accepted_choice_reward = expected_performace_easy, self.reward_1
