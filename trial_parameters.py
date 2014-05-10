@@ -4,13 +4,13 @@
 #general settings for order of trial modi and object positions
 #-----------------------------------------------------------------------------
 #time for one fmri measurement
-fmri_time = 1.5                                                 
+fmri_time = 1.5                                     
+#Block Structure given as [number of blocks, blocks per trial]
+blocks = [3,10]
 #modi of trials to be taken, out of math, dot, audio
 trial_modi = ['audio','math', 'dot']                             
-#the number of trails per modus to be taken
-number_of_trials = 2                                            
 #maximum number of repetitions in randomization
-max_rep = 4                                                     
+max_rep = 4                                                
 #spacing of the objects on slides
 size = 0.2
             #stim_1, stim_2
@@ -43,8 +43,8 @@ time_stim_2 = 0.8
 time_break_1 = 0.2
 time_break_2 = 0.2
 time_options = 1.0
-time_delay_1 = [1.0,2.0]
-time_delay_2 = [1.0,2.0]
+time_delay_1 = [1,2]
+time_delay_2 = [1,2]
 time_response = 1
 time_baseline = [1,4]
 #desired delay average in fmri time units

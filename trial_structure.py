@@ -55,7 +55,7 @@ eye_tracker.setOfflineMode()
 #initialize the class for generation of trial parameters
 #-----------------------------------------------------------------------------
 print 'trial setup'
-init_parameters = init('choice')
+init_parameters = init()
 #-----------------------------------------------------------------------------
 
 
@@ -84,25 +84,26 @@ win.flip()
 core.wait(0.1)
 #-----------------------------------------------------------------------------
 
-#iterate over the different trial modi and generate trial parameters accordingly
+#iterate over requested number of blocks and set parameters
 #-----------------------------------------------------------------------------
-for kind in globvar.trial_modi:
-    #write a short note to the output file, if a new trial modus starts
-    print>>output_user_interaction, `globvar.number_of_trials`+ ' ' + kind + ' trials'
-    print>>output_trial_timing, `globvar.number_of_trials`+ ' ' + kind + ' trials'
+for block in range(globvar.blocks[0]):
+    #write a short note to the output file, if a new block starts
+    print>>output_user_interaction, 'start block ' + `block`
+    print>>output_trial_timing, 'start block ' + `block`
     #generate trial parameters for the upcomming trials
-    timing, difficulties, inversions = init_parameters.rand_trial_parameters(kind)
+    timing, difficulties, inversions, kind = init_parameters.rand_trial_parameters()
 #-----------------------------------------------------------------------------
 
 #run the actual trials and record user input
 #-----------------------------------------------------------------------------
-    for i in range(0,globvar.number_of_trials):
+    for i in range(0,globvar.blocks[1]):
         if eyelink_ver != 0:
             if eye_tracker.isConnected()==False:
                 print 'SCANNER CONNECTION LOST'
             pylink.getEYELINK().startRecording(1, 1, 0, 0)
-
-        current_trial = trial(kind, win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
+        #set trial parameters
+        current_trial = trial(kind[i], win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
+        #run trial
         current_trial.run_trial()
         #data from trial.getData() is kind, user_active[y,n], input_key, difficulty_chosen, reward_chosen, dif*rew, 
         #                                                                difficulty_rejected, reward_rejected, dif*rew

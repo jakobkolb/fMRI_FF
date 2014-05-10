@@ -517,16 +517,14 @@ class trial:
 #----------------------------------------------------------------------------
 class init:
     'class to randomize trial parameters'
-    blub = 1
 
-    def __init__(self, modus):
+    def __init__(self):
         self.desired_delay_average      = globvar.mean_delay_average
         self.desired_baseline_average   = globvar.mean_baseline_average
         self.max_rep                    = globvar.max_rep
-        self.number_of_trials           = globvar.number_of_trials
-        self.mode                       = modus
+        self.number_of_trials           = globvar.blocks[1]
         
-    def rand_trial_parameters(self, kind):
+    def rand_trial_parameters(self):
 
         too_many_repetitions =True
 
@@ -538,9 +536,9 @@ class init:
                     globvar.time_options,globvar.time_delay_1[0],globvar.time_delay_2[0],
                     globvar.time_response,globvar.time_baseline[0]]
             for i in range(self.number_of_trials):
-                timing[i,5] = np.random.randint(globvar.time_delay_1[0],globvar.time_delay_1[1])
-                timing[i,6] = np.random.randint(globvar.time_delay_2[0],globvar.time_delay_2[1])
-                timing[i,8] = np.random.randint(globvar.time_baseline[0],globvar.time_baseline[1])
+                timing[i,5] = random.choice(range(globvar.time_delay_1[0],globvar.time_delay_1[1]+1,1))
+                timing[i,6] = random.choice(range(globvar.time_delay_2[0],globvar.time_delay_2[1]+1,1))
+                timing[i,8] = random.choice(range(globvar.time_baseline[0],globvar.time_baseline[1]+1,1))
             #adjust means of timing for delay and baseline slides to fit the desired time averages
             #Estimated_delay_time  = sum(timing[:,1])/self.number_of_trials
            #M   = int(self.number_of_trials*(Estimated_delay_time - self.desired_delay_average))
@@ -567,19 +565,21 @@ class init:
 
             #difficulties for the current trial in the form [easy, hard], units for difficulty of different trials have to be
             #set according to participants performance.
-            print kind
-            if kind == 'math':
-                print 'math diff'
-                difficulties = np.zeros((self.number_of_trials,2))
-                difficulties[:,0:2] = globvar.math_trial_interval
-            elif kind == 'dot':
-                print 'dot diff'
-                difficulties = np.zeros((self.number_of_trials,2))
-                difficulties[:,0:2] = globvar.dot_motion_trial_coherence
-            elif kind == 'audio':
-                print 'audio diff'
-                difficulties = np.zeros((self.number_of_trials,2))
-                difficulties[:,0:2] = globvar.audio_trial_stn_ratio
+            kind = []
+            for i in range(self.number_of_trials):
+                kind.append(random.choice(globvar.trial_modi))
+
+            difficulties = np.zeros((self.number_of_trials,2))
+            for i in range(self.number_of_trials):
+                if kind[i] == 'math':
+                    difficulties = np.zeros((self.number_of_trials,2))
+                    difficulties[:,0:2] = globvar.math_trial_interval
+                elif kind[i] == 'dot':
+                    difficulties = np.zeros((self.number_of_trials,2))
+                    difficulties[:,0:2] = globvar.dot_motion_trial_coherence
+                elif kind[i] == 'audio':
+                    difficulties = np.zeros((self.number_of_trials,2))
+                    difficulties[:,0:2] = globvar.audio_trial_stn_ratio
 
             #deviation from standard order of elements on slide A and C
             inversions = np.zeros((self.number_of_trials,3))
@@ -597,22 +597,31 @@ class init:
                 same_3 = True
                 same_4 = True
                 same_5 = True
+                same_6 = True
                 for j in range(i,i+self.max_rep):
                     if inversions[j,0] != inversions[i,0]:
                         same_1 = False
-                    if  inversions[j,1] != inversions[i,1]:
+                        k = i
+                    if inversions[j,1] != inversions[i,1]:
                         same_2 = False
+                        k = i
                     if inversions[j,2] != inversions[i,2]:
                         same_3 = False
-                    if  timing[j,1] != timing[i,1]:
+                        k = i
+                    if timing[j,5] != timing[i,5]:
                         same_4 = False
-                    if timing[j,3] != timing[i,3]:
+                        k = i
+                    if timing[j,6] != timing[i,6]:
                         same_5 = False
-                if same_1 == True or same_2 == True or same_3 == True or same_4 == True or same_5 == True :
+                        k = i
+                    if timing[j,8] != timing[i,8]:
+                        same_6 = False
+                        k = i
+                if same_1 == True or same_2 == True or same_3 == True or same_4 == True or same_5 == True or same_6 == True :
                         too_many_repetitions = True
                         break
 
         print 'mean delay time is ', sum(timing[:,1])/self.number_of_trials
         print 'mean baseline time is ', sum(timing[:,3])/self.number_of_trials
-        return timing, difficulties, inversions
+        return timing, difficulties, inversions, kind
 
