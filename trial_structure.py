@@ -78,20 +78,44 @@ print>>output_trial_timing, '#trial_type, time_slide_A, time_slide_B, time_slide
 
 #preparation of trials: short introduction and explanation slide
 #-----------------------------------------------------------------------------
-message1 = visual.TextStim(win=win, text='the first slide presents two differently difficult \n options and the reward that can be gained by choosing one of them. \n the third slide lets you choose one of the options \n according to the marker signs using the left and right arrow keys. \n The experiment can be paused by pressing p or be ended by pressing escape on this slide.')
+message1 = visual.TextStim(win=win, text='Wellcome to the experiment! \n \n \n \n \n \n The experiment can be paused by pressing p or be ended by pressing escape on the response slide.')
 message1.draw()
 win.flip()
-core.wait(0.1)
+core.wait(2)
+#-----------------------------------------------------------------------------
+
+#randomize block kind
+#-----------------------------------------------------------------------------
+blocks = []
+j = random.randint(1,np.shape(globvar.trial_modi)[0])
+for i in range(globvar.blocks[0]):
+    blocks.append(globvar.trial_modi[(i+j)%np.shape(globvar.trial_modi)[0]])
+random.shuffle(blocks) 
 #-----------------------------------------------------------------------------
 
 #iterate over requested number of blocks and set parameters
 #-----------------------------------------------------------------------------
-for block in range(globvar.blocks[0]):
+for block, kind in enumerate(blocks):
+    #announce block!
+    if kind == 'math':
+        announce_text = 'Arithmetic'
+    if kind == 'dot':
+        announce_text = 'Random Dot Motion'
+    if kind == 'audio':
+        announce_text = 'Audio'
+    text = visual.TextStim(win, text=announce_text, bold=True, height=0.2, pos=(0,0))
+   
+    text.draw()
+    win.flip()
+    core.wait(3)
+    win.flip()
+    core.wait(1)
+
     #write a short note to the output file, if a new block starts
-    print>>output_user_interaction, 'start block ' + `block`
-    print>>output_trial_timing, 'start block ' + `block`
+    print>>output_user_interaction, 'start ', kind, ' block ' + `block`
+    print>>output_trial_timing, 'start ', kind, ' block ' + `block`
     #generate trial parameters for the upcomming trials
-    timing, difficulties, inversions, kind, diff_gap = init_parameters.rand_trial_parameters()
+    timing, difficulties, inversions, diff_gap = init_parameters.rand_trial_parameters(kind)
 #-----------------------------------------------------------------------------
 
 #run the actual trials and record user input
@@ -102,7 +126,7 @@ for block in range(globvar.blocks[0]):
                 print 'SCANNER CONNECTION LOST'
             pylink.getEYELINK().startRecording(1, 1, 0, 0)
         #set trial parameters
-        current_trial = trial(kind[i], diff_gap[i], win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
+        current_trial = trial(kind, diff_gap[i], win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
         #run trial
         current_trial.run_trial()
         #data from trial.getData() is kind, user_active[y,n], input_key, difficulty_chosen, reward_chosen, dif*rew, 

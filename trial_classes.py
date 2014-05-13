@@ -38,8 +38,8 @@ class trial:
         self.pos_reward_1   = spacing[4]    #position of the prize for task 1
         self.pos_reward_2   = spacing[5]    #position of the prize for task 2
         self.pos_fixcross   = spacing[6]    #position of fixation cross
-        self.dif_stim_1     = difficulties[0] #difficulty of stim_1
-        self.dif_stim_2     = difficulties[1] #difficulty of stim_2
+        self.dif_easy       = difficulties[0] #difficulty for easy stimulus
+        self.dif_hard       = difficulties[1] #difficulty for hard stimulus
         self.time_stim_1    = timing[0]*trial.ts  #display time for stimulus
         self.time_stim_2    = timing[1]*trial.ts  #display time for stimulus
         self.time_break_1   = timing[2]*trial.ts  #display time for first delay
@@ -84,12 +84,12 @@ class trial:
             dot_direction_1, self.correct_answer_easy = random.choice(globvar.possible_rdm_directions)
             dot_direction_2, self.correct_answer_hard = random.choice(globvar.possible_rdm_directions)
             #setup rdm coherences from difficulty levels
-            dot_coherence_1, dot_coherence_2 = self.dif_stim_1, self.dif_stim_2
+            dot_coherence_1, dot_coherence_2 = self.dif_easy, self.dif_hard
             stim = []
             stim.extend([visual.DotStim(
                     #constant parameters for dot motion
                     self.window, color=(1.0,1.0,1.0), nDots=500, fieldShape='circle', fieldSize=4*globvar.size, 
-                    dotLife=100, signalDots='same', noiseDots='direction', speed=0.002, 
+                    dotLife=5, signalDots='same', noiseDots='direction', speed=0.005, 
                     #variable parameters for dot motion
                     coherence=dot_coherence_1,
                     dir=dot_direction_1,
@@ -98,7 +98,7 @@ class trial:
             stim.extend([visual.DotStim(
                     #constant parameters for dot motion
                     self.window, color=(1.0,1.0,1.0), nDots=500, fieldShape='circle', fieldSize=4*globvar.size,
-                    dotLife=100, signalDots='same', noiseDots='direction', speed=0.002, 
+                    dotLife=5, signalDots='same', noiseDots='direction', speed=0.005, 
                     #variable parameters for dot motion
                     coherence=dot_coherence_2,
                     dir=dot_direction_2,
@@ -125,8 +125,8 @@ class trial:
                 self.numbers_to_sum[i] = np.random.randint(1,21)
             self.correct_answer = sum(self.numbers_to_sum)
             #build intervals around the correct answer
-            easy_interval = '+/-'+`int(self.dif_stim_1)`
-            hard_interval = '+/-'+`int(self.dif_stim_2)`
+            easy_interval = '+/-'+`int(self.dif_easy)`
+            hard_interval = '+/-'+`int(self.dif_hard)`
             #create stimuli for the intervals
 #            stim_1 = visual.TextStim(self.window, text=easy_interval, pos=spos1)
 #            stim_2 = visual.TextStim(self.window, text=hard_interval, pos=spos2)
@@ -215,11 +215,11 @@ class trial:
             noise = np.random.randn(sound_frames)
             #switch noise levels on left and right chanal according to flip
             if self.flip[1] == 1:
-                noise_level_1 = self.dif_stim_1
-                noise_level_2 = self.dif_stim_2
+                noise_level_1 = self.dif_easy
+                noise_level_2 = self.dif_hard
             elif self.flip[1] == -1:
-                noise_level_1 = self.dif_stim_2
-                noise_level_2 = self.dif_stim_1
+                noise_level_1 = self.dif_hard
+                noise_level_2 = self.dif_easy
             #ad noise to signals
             stim_1_data = np.zeros((sound_frames))
             stim_2_data = np.zeros((sound_frames))
@@ -264,22 +264,35 @@ class trial:
             self.window.flip()
             t1 = self.time_stim_1+self.time_stim_2+self.time_break_1+self.time_break_2
             dot_timer = core.CountdownTimer(t1)
+            start1, stop1 = False, False
+            start2, stop2 = False, False
             while True :
                 t = t1 - dot_timer.getTime()
+                print t
                 if (t>=t1):
                     break
-                if (0<t and t<self.time_stim_1):
+                if (0<t and start1 == False):
                     audit_stim_1.play(loops = -1)
+                    start1 = True
+                    print '1 started'
+                if (0<t and t<self.time_stim_1):
                     cross.draw()
                     speaker_symbol.draw()
-                elif (self.time_stim_1<t and t<self.time_stim_1 + self.time_break_1):
+                elif (self.time_stim_1<t and stop1 == False):
                     audit_stim_1.stop()
-                elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
+                    stop1 = True
+                    print '1 stopped'
+                elif (self.time_stim_1+self.time_break_1<t and start2 == False):
                     audit_stim_2.play(loops = -1)
+                    start2 = True
+                    print '2 started'
+                elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
                     cross.draw()
                     speaker_symbol.draw()
-                elif (self.time_stim_1 + self.time_break_1 + self.time_stim_2<t):
+                elif (self.time_stim_1 + self.time_break_1 + self.time_stim_2<t and stop2 == False):
                     audit_stim_2.stop()
+                    stop2 = True
+                    print '2 stopped'
                 self.window.flip()
         else :
             stim_1 = visual.TextStim(self.window, text='someotherstim1', pos=spos1)
@@ -541,7 +554,7 @@ class init:
         self.max_rep                    = globvar.max_rep
         self.number_of_trials           = globvar.blocks[1]
         
-    def rand_trial_parameters(self):
+    def rand_trial_parameters(self, kind):
 
         too_many_repetitions =True
 
@@ -549,9 +562,21 @@ class init:
 
             #time for slides
             timing = np.zeros((self.number_of_trials,9))
-            timing[:,0:9] = [globvar.time_stim_1,globvar.time_stim_2,globvar.time_break_1,globvar.time_break_2,
+            timing[:,0:9] = [0,0,globvar.time_break_1,globvar.time_break_2,
                     globvar.time_options,globvar.time_delay_1[0],globvar.time_delay_2[0],
                     globvar.time_response,globvar.time_baseline[0]]
+
+            #set timing for stimuli presentation dependent on kind 
+            if kind == 'math':
+                timing[:,0] = globvar.time_math_stim_1
+                timing[:,1] = globvar.time_math_stim_2
+            if kind == 'dot':
+                timing[:,0] = globvar.time_dot_stim_1
+                timing[:,1] = globvar.time_dot_stim_2
+            if kind == 'audio':
+                timing[:,0] = globvar.time_audio_stim_1
+                timing[:,1] = globvar.time_audio_stim_2
+
             for i in range(self.number_of_trials):
                 timing[i,5] = random.choice(range(globvar.time_delay_1[0],globvar.time_delay_1[1]+1,1))
                 timing[i,6] = random.choice(range(globvar.time_delay_2[0],globvar.time_delay_2[1]+1,1))
@@ -586,25 +611,21 @@ class init:
             for i in range(self.number_of_trials):
                 diff_gap.append(random.choice(['small', 'large']))
 
-            kind = []
-            for i in range(self.number_of_trials):
-                kind.append(random.choice(globvar.trial_modi))
-
             difficulties = np.zeros((self.number_of_trials,2))
             for i in range(self.number_of_trials):
                 if diff_gap[i] == 'small':
-                    if kind[i] == 'math':
+                    if kind == 'math':
                         difficulties[i,0:2] = globvar.math_trial_interval_s
-                    elif kind[i] == 'dot':
+                    elif kind == 'dot':
                         difficulties[i,0:2] = globvar.dot_motion_trial_coherence_s
-                    elif kind[i] == 'audio':
+                    elif kind == 'audio':
                         difficulties[i,0:2] = globvar.audio_trial_stn_ratio_s
                 if diff_gap[i] == 'large':
-                    if kind[i] == 'math':
+                    if kind == 'math':
                         difficulties[i,0:2] = globvar.math_trial_interval_l
-                    elif kind[i] == 'dot':
+                    elif kind == 'dot':
                         difficulties[i,0:2] = globvar.dot_motion_trial_coherence_l
-                    elif kind[i] == 'audio':
+                    elif kind == 'audio':
                         difficulties[i,0:2] = globvar.audio_trial_stn_ratio_l
 
             #deviation from standard order of elements on slide A and C
@@ -649,5 +670,5 @@ class init:
 
         print 'mean delay time is ', sum(timing[:,1])/self.number_of_trials
         print 'mean baseline time is ', sum(timing[:,3])/self.number_of_trials
-        return timing, difficulties, inversions, kind, diff_gap
+        return timing, difficulties, inversions, diff_gap
 

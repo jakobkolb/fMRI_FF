@@ -5,12 +5,10 @@
 #-----------------------------------------------------------------------------
 #time for one fmri measurement
 fmri_time = 1.5                                     
-#Number settings for block structure given as [number of blocks, blocks per trial]
-blocks = [3,10]
+#Number settings for block structure given as [number of blocks, trials per block]
+blocks = [6,10]
 #modi of trials to be taken, out of math, dot, audio
-trial_modi = ['audio','math', 'dot']                             
-#maximum number of repetitions in randomization i.e max same trial types, equal delay times etc in a row
-max_rep = 4                                                
+trial_modi = ['audio', 'dot', 'math']                             
 #spacing of the objects on slides
 size = 0.2
             #stim_1, stim_2
@@ -38,8 +36,13 @@ full_screen = False
 #Timing settings
 #-----------------------------------------------------------------------------
 #timing for each part of one trial in units of fmri_time
-time_stim_1 = 0.8
-time_stim_2 = 0.8
+#timing for the presention of the different tasks can be set independently
+time_math_stim_1 = 1.8
+time_math_stim_2 = 1.8
+time_dot_stim_1 = 0.8
+time_dot_stim_2 = 0.8
+time_audio_stim_1 = 0.8
+time_audio_stim_2 = 0.8
 time_break_1 = 0.2
 time_break_2 = 0.2
 time_options = 1.0
@@ -51,7 +54,8 @@ time_baseline = [1,4]
 mean_delay_average = 2
 #desired baseline average in fmir time units
 mean_baseline_average = 3
-
+#maximum number of repetitions in randomization i.e max same trial types, equal delay times etc in a row
+max_rep = 4                                                
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
@@ -62,7 +66,7 @@ mean_baseline_average = 3
 reward_hard_s = [0.5,0.6]          
 reward_easy_s = [0.3,0.5]
 reward_hard_l = [0.8,1]          
-reward_easy_l = [0,0.2]
+reward_easy_l = [0.1,0.3]
 #difficulty settings for different trial modi in the form [easy, hard] 
 #and corresponding expected participant performance for [easy, hard]
 #Settings for large difficulty difference trials are marked with _l, 
