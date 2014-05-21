@@ -213,13 +213,9 @@ class trial:
             max_amp_file_2 = max(abs(file_2_data))
             #create white noise
             noise = np.random.randn(sound_frames)
-            #switch noise levels on left and right chanal according to flip
-            if self.flip[1] == 1:
-                noise_level_1 = self.dif_easy
-                noise_level_2 = self.dif_hard
-            elif self.flip[1] == -1:
-                noise_level_1 = self.dif_hard
-                noise_level_2 = self.dif_easy
+            #set noise levels
+            noise_level_1 = self.dif_easy
+            noise_level_2 = self.dif_hard
             #ad noise to signals
             stim_1_data = np.zeros((sound_frames))
             stim_2_data = np.zeros((sound_frames))
@@ -233,6 +229,13 @@ class trial:
                 if abs(stim_2_data[i]) > max_amp_file_2:
                     sign_2 = file_2_data[i]/abs(file_2_data[i])
                     stim_2_data[i] = max_amp_file_2*sign_2
+            #normalize audio streams to fixed amplitude
+            amp1 = max(stim_1_data)
+            amp2 = max(stim_2_data)
+            max_amp = 16000
+            stim_2_data = stim_2_data/amp2*max_amp
+            stim_1_data = stim_1_data/amp1*max_amp
+            print max(stim_1_data), max(stim_2_data)
             #open output files
             stim_file_1 = wave.open(stim_files[0], 'w')
             stim_file_2 = wave.open(stim_files[1], 'w')
@@ -254,7 +257,7 @@ class trial:
             stim_file_2.close()
             file_1.close()
             file_2.close()
-            #generate sound stimulus
+            #generate sound stimulus. open stim files according to stim times (invert play order according to flip)
             audit_stim_1 = sound.Sound(value=stim_files[stime1], sampleRate = file_1_parameters[3])
             audit_stim_2 = sound.Sound(value=stim_files[stime2], sampleRate = file_1_parameters[3])
             speaker_symbol = visual.ImageStim(self.window, image=globvar.speaker_symbol, pos=(0,globvar.size), size = 0.2)
@@ -268,7 +271,6 @@ class trial:
             start2, stop2 = False, False
             while True :
                 t = t1 - dot_timer.getTime()
-                print t
                 if (t>=t1):
                     break
                 if (0<t and start1 == False):

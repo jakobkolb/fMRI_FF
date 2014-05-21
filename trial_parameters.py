@@ -8,9 +8,9 @@ fmri_time = 1.5
 #Number settings for block structure given as [number of blocks, trials per block]
 blocks = [6,10]
 #modi of trials to be taken, out of math, dot, audio
-trial_modi = ['dot','math','audio']                             
+trial_modi = ['dot', 'math', 'audio']
 #spacing of the objects on slides
-size = 0.2
+size = 0.18
             #stim_1, stim_2
 spacing = [ (0,0),(0,0),                             
             #marker_1, marker_2
@@ -77,14 +77,14 @@ math_trial_difficulty_l     = [0.8,0.2]
 math_trial_interval_s       = [7,5]
 math_trial_difficulty_s     = [0.6,0.4]
 #for rdm trial:coherence of the dot motion values between 0 and 1
-dot_motion_trial_coherence_l  = [0.8,0.2]
+dot_motion_trial_coherence_l  = [0.9,0.5]
 dot_motion_difficulty_l       = [0.8,0.2]
-dot_motion_trial_coherence_s  = [0.6,0.4]
+dot_motion_trial_coherence_s  = [0.8,0.6]
 dot_motion_difficulty_s       = [0.6,0.4]
 #for the audio trial: signal to noise ratio. 0.2 means 20% noise, 80% signal(i.e. ba da ru lu)
-audio_trial_stn_ratio_l       = [0.1,0.4]
+audio_trial_stn_ratio_l       = [0.1,0.43]
 audio_trial_difficulty_l      = [0.8,0.2]
-audio_trial_stn_ratio_s       = [0.2,0.3]
+audio_trial_stn_ratio_s       = [0.15,0.38]
 audio_trial_difficulty_s      = [0.6,0.4]
 #-----------------------------------------------------------------------------
 
