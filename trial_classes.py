@@ -89,7 +89,7 @@ class trial:
             stim.extend([visual.DotStim(
                     #constant parameters for dot motion
                     self.window, color=(1.0,1.0,1.0), nDots=500, fieldShape='circle', fieldSize=4*globvar.size, 
-                    dotLife=5, signalDots='same', noiseDots='direction', speed=0.005, 
+                    dotLife=2, signalDots='same', noiseDots='direction', speed=0.01, 
                     #variable parameters for dot motion
                     coherence=dot_coherence_1,
                     dir=dot_direction_1,
@@ -98,7 +98,7 @@ class trial:
             stim.extend([visual.DotStim(
                     #constant parameters for dot motion
                     self.window, color=(1.0,1.0,1.0), nDots=500, fieldShape='circle', fieldSize=4*globvar.size,
-                    dotLife=5, signalDots='same', noiseDots='direction', speed=0.005, 
+                    dotLife=2, signalDots='same', noiseDots='direction', speed=0.01, 
                     #variable parameters for dot motion
                     coherence=dot_coherence_2,
                     dir=dot_direction_2,

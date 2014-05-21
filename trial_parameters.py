@@ -8,7 +8,7 @@ fmri_time = 1.5
 #Number settings for block structure given as [number of blocks, trials per block]
 blocks = [6,10]
 #modi of trials to be taken, out of math, dot, audio
-trial_modi = ['audio', 'dot', 'math']                             
+trial_modi = ['dot','math','audio']                             
 #spacing of the objects on slides
 size = 0.2
             #stim_1, stim_2
