@@ -18,6 +18,12 @@ import wave
 import trial_parameters as globvar
 from struct import pack
 import pylink
+import operator
+import pickle
+
+def prod(iterable):
+        return reduce(operator.mul, iterable, 1)
+
 class trial:
     'class to outline trial structure'
     trialCount = 0
@@ -41,11 +47,11 @@ class trial:
         self.dif_easy       = difficulties[0] #difficulty for easy stimulus
         self.dif_hard       = difficulties[1] #difficulty for hard stimulus
         self.time_stim_1    = timing[0]*trial.ts  #display time for stimulus
-        self.time_stim_2    = timing[1]*trial.ts  #display time for stimulus
-        self.time_break_1   = timing[2]*trial.ts  #display time for first delay
+        self.time_break_1   = timing[1]*trial.ts  #display time for first delay
+        self.time_stim_2    = timing[2]*trial.ts  #display time for stimulus
         self.time_break_2   = timing[3]*trial.ts  #display time for first delay
-        self.time_options   = timing[4]*trial.ts  #display time for decision screen
-        self.time_delay_1   = timing[5]*trial.ts  #display time for first delay
+        self.time_delay_1   = timing[4]*trial.ts  #display time for first delay
+        self.time_options   = timing[5]*trial.ts  #display time for decision screen
         self.time_delay_2   = timing[6]*trial.ts  #display time for first delay
         self.time_decision  = timing[7]*trial.ts  #display time for decision screen
         self.time_baseline  = timing[8]*trial.ts  #display time for baseline
@@ -62,15 +68,18 @@ class trial:
                 self.user_input[6], \
                 round(self.user_input[7],4)
                 
+#                self.user_input = [1,key,
+#                        accepted_choice_dif, accepted_choice_reward, accepted_choice_dif*accepted_choice_reward, 
+#                        rejected_choice_dif, rejected_choice_reward, rejected_choice_dif*rejected_choice_reward]
     def getTiming(self):
         return  self.name, self.t_stimuli, self.t_delay_1, self.t_options, self.t_delay_2, self.t_response, self.t_baseline, self.t_end, self.tR
 
     def present_stimuli(self):
         #reverse task position and time if flip[1] == -1. default is easy first on the left, hard second on the right
-        if self.flip[1] == 1:
+        if self.flip[0] == 1:
             stime1, spos1 = 0, self.pos_stim_1
             stime2, spos2 = 1, self.pos_stim_2
-        elif self.flip[1] == -1:
+        elif self.flip[0] == -1:
             stime1, spos1 = 1, self.pos_stim_2
             stime2, spos2 = 0, self.pos_stim_1
 
@@ -306,10 +315,10 @@ class trial:
 #Option slide with markers and rewards
     def present_options(self):
         #reverse position of markers if flip[0] == -1
-        if self.flip[0] == 1:
+        if self.flip[2] == 1:
             mpos1 = self.pos_marker_1
             mpos2 = self.pos_marker_2
-        elif self.flip[0] == -1:
+        elif self.flip[2] == -1:
             mpos1 = self.pos_marker_2
             mpos2 = self.pos_marker_1
         #reverse reward position if flip[1] == -1. default is easy on the left, hard on the right
@@ -395,31 +404,20 @@ class trial:
     def present_response(self):
         print 'present slide C'
         #load actual difficulties from trial_parameters according to trial modus
-        if self.diff_gap == 'small':
-            if self.name == 'dot':
-                expected_performace_easy = globvar.dot_motion_difficulty_s[0]
-                expected_performace_hard = globvar.dot_motion_difficulty_s[1]
-            elif self.name == 'audio':
-                expected_performace_easy = globvar.audio_trial_difficulty_s[0]
-                expected_performace_hard = globvar.audio_trial_difficulty_s[1]
-            elif self.name == 'math':
-                expected_performace_easy = globvar.math_trial_difficulty_s[0]
-                expected_performace_hard = globvar.math_trial_difficulty_s[1]
-        if self.diff_gap == 'large':
-            if self.name == 'dot':
-                expected_performace_easy = globvar.dot_motion_difficulty_l[0]
-                expected_performace_hard = globvar.dot_motion_difficulty_l[1]
-            elif self.name == 'audio':
-                expected_performace_easy = globvar.audio_trial_difficulty_l[0]
-                expected_performace_hard = globvar.audio_trial_difficulty_l[1]
-            elif self.name == 'math':
-                expected_performace_easy = globvar.math_trial_difficulty_l[0]
-                expected_performace_hard = globvar.math_trial_difficulty_l[1]
+        if self.name == 'dot':
+            expected_performance_easy = globvar.dot_motion_difficulty[0]
+            expected_performance_hard = globvar.dot_motion_difficulty[1]
+        elif self.name == 'audio':
+            expected_performance_easy = globvar.audio_trial_difficulty[0]
+            expected_performance_hard = globvar.audio_trial_difficulty[1]
+        elif self.name == 'math':
+            expected_performance_easy = globvar.math_trial_difficulty[0]
+            expected_performance_hard = globvar.math_trial_difficulty[1]
         self.window.clearBuffer()
-        if self.flip[2] == 1:
+        if self.flip[3] == 1:
             mpos1 = self.pos_marker_1
             mpos2 = self.pos_marker_2
-        elif self.flip[2] == -1:
+        elif self.flip[3] == -1:
             mpos1 = self.pos_marker_2
             mpos2 = self.pos_marker_1
         marker_1= visual.ImageStim(self.window, image=globvar.file_marker_1, pos=mpos1)
@@ -445,20 +443,29 @@ class trial:
             for key in event.getKeys(keyList=['left','right', 'p', 'escape']):
                 if key in ['left', 'right']:
                     self.tR = self.time.getTime()-self.t_response
-                    if (self.flip[0]*self.flip[1]*self.flip[2]) == 1:
-                        if key == 'left':
-                            accepted_choice_dif, accepted_choice_reward = expected_performace_easy, self.reward_1
-                            rejected_choice_dif, rejected_choice_reward = expected_performace_hard, self.reward_2
-                        elif key == 'right':
-                            accepted_choice_dif, accepted_choice_reward = expected_performace_hard, self.reward_2
-                            rejected_choice_dif, rejected_choice_reward = expected_performace_easy, self.reward_1
-                    elif (self.flip[0]*self.flip[1]*self.flip[2]) == -1:
-                        if key == 'left':
-                            accepted_choice_dif, accepted_choice_reward = expected_performace_hard, self.reward_2
-                            rejected_choice_dif, rejected_choice_reward = expected_performace_easy, self.reward_1
-                        elif key == 'right':
-                            accepted_choice_dif, accepted_choice_reward = expected_performace_easy, self.reward_1
-                            rejected_choice_dif, rejected_choice_reward = expected_performace_hard, self.reward_2
+                    if key == 'left':
+                        choice = 1
+                    elif key == 'right':
+                        choice = -1
+                    reward_ind = [1,2,3]
+                    diff_ind = [0,2,3]
+                    print prod(self.flip[reward_ind])
+                    #figure out which reward/difficulty level the user accepted/rejected by cross checking his choice
+                    #with the position of the elements in the trial. by default easy trial is first, low reward is left and
+                    #marker_1 is always left each deviation of this setup is given by a flip = -1.
+                    if prod(self.flip[reward_ind])*choice == 1:
+                        accepted_choice_reward = self.reward_1
+                        rejected_choice_reward = self.reward_2
+                    elif prod(self.flip[reward_ind]*choice) == -1:
+                        accepted_choice_reward = self.reward_2
+                        rejected_choice_reward = self.reward_1
+                    if prod(self.flip[diff_ind])*choice == 1:
+                        accepted_choice_dif = expected_performance_easy
+                        rejected_choice_dif = expected_performance_hard
+                    if prod(self.flip[diff_ind])*choice == -1:
+                        accepted_choice_dif = expected_performance_hard
+                        rejected_choice_dif = expected_performance_easy
+                    
                     user_active = True
                     input_correc = True
                     self.user_input = [1,key,
@@ -551,126 +558,18 @@ class init:
     'class to randomize trial parameters'
 
     def __init__(self):
-        self.desired_delay_average      = globvar.mean_delay_average
-        self.desired_baseline_average   = globvar.mean_baseline_average
-        self.max_rep                    = globvar.max_rep
-        self.number_of_trials           = globvar.blocks[1]
+        self.number_of_trials = globvar.blocks[0]*globvar.blocks[1]
         
-    def rand_trial_parameters(self, kind):
+    def load_trial_parameters(self):
+        
+        with open('run_parameters.p', 'rb') as fp:
+                    data = pickle.load(fp)
+        
+        timing = data['timing']
+        difficulties = data['difficulties']
+        inversions = data['inversions']
+        EV_gap = data['EV_gap']
+        blocks = data['blocks']
 
-        too_many_repetitions =True
-
-        while too_many_repetitions == True:
-
-            #time for slides
-            timing = np.zeros((self.number_of_trials,9))
-            timing[:,0:9] = [0,0,globvar.time_break_1,globvar.time_break_2,
-                    globvar.time_options,globvar.time_delay_1[0],globvar.time_delay_2[0],
-                    globvar.time_response,globvar.time_baseline[0]]
-
-            #set timing for stimuli presentation dependent on kind 
-            if kind == 'math':
-                timing[:,0] = globvar.time_math_stim_1
-                timing[:,1] = globvar.time_math_stim_2
-            if kind == 'dot':
-                timing[:,0] = globvar.time_dot_stim_1
-                timing[:,1] = globvar.time_dot_stim_2
-            if kind == 'audio':
-                timing[:,0] = globvar.time_audio_stim_1
-                timing[:,1] = globvar.time_audio_stim_2
-
-            for i in range(self.number_of_trials):
-                timing[i,5] = random.choice(range(globvar.time_delay_1[0],globvar.time_delay_1[1]+1,1))
-                timing[i,6] = random.choice(range(globvar.time_delay_2[0],globvar.time_delay_2[1]+1,1))
-                timing[i,8] = random.choice(range(globvar.time_baseline[0],globvar.time_baseline[1]+1,1))
-            #adjust means of timing for delay and baseline slides to fit the desired time averages
-            #Estimated_delay_time  = sum(timing[:,1])/self.number_of_trials
-           #M   = int(self.number_of_trials*(Estimated_delay_time - self.desired_delay_average))
-           #n=1
-           #while n<M:
-           #    #pick random time in the trial sequence
-           #    i = np.random.randint(self.number_of_trials)
-           #    #only change the value, if it is not equal to the time before and after
-           #    if timing[i,1]-1!=timing[(i+1)%self.number_of_trials,1] \
-           #            or timing[i,1]-1!=timing[(i-1)%self.number_of_trials,1] \
-           #            and timing[i,1]-1>0:
-           #        timing[i,1]-=1
-           #        n+=1
-           #Estimated_baseline_time  = sum(timing[:,3])/self.number_of_trials
-           #M   = int(self.number_of_trials*(Estimated_baseline_time - self.desired_baseline_average))
-           #n=1
-           #while n<M:
-           #    i = np.random.randint(self.number_of_trials-1)
-           #    if timing[i,3]-1!=timing[(i+1)%self.number_of_trials,3] \
-           #            or timing[i,3]-1!=timing[(i-1)%self.number_of_trials,3] \
-           #            and timing[i,3]-2>0:
-           #        timing[i,3]-=1
-           #        n+=1
-
-            #difficulties for the current trial in the form [easy, hard], units for difficulty of different trials have to be
-            #set according to participants performance.
-            diff_gap = []
-            for i in range(self.number_of_trials):
-                diff_gap.append(random.choice(['small', 'large']))
-
-            difficulties = np.zeros((self.number_of_trials,2))
-            for i in range(self.number_of_trials):
-                if diff_gap[i] == 'small':
-                    if kind == 'math':
-                        difficulties[i,0:2] = globvar.math_trial_interval_s
-                    elif kind == 'dot':
-                        difficulties[i,0:2] = globvar.dot_motion_trial_coherence_s
-                    elif kind == 'audio':
-                        difficulties[i,0:2] = globvar.audio_trial_stn_ratio_s
-                if diff_gap[i] == 'large':
-                    if kind == 'math':
-                        difficulties[i,0:2] = globvar.math_trial_interval_l
-                    elif kind == 'dot':
-                        difficulties[i,0:2] = globvar.dot_motion_trial_coherence_l
-                    elif kind == 'audio':
-                        difficulties[i,0:2] = globvar.audio_trial_stn_ratio_l
-
-            #deviation from standard order of elements on slide A and C
-            inversions = np.zeros((self.number_of_trials,3))
-            inversions[:,0:3] = [0,0,0]
-            for i in range(self.number_of_trials):
-                inversions[i,0] = random.choice([-1,1])
-                inversions[i,1] = random.choice([-1,1])
-                inversions[i,2] = random.choice([-1,1])
-
-            #check if the maximum number of repetitions satisfies max_rep
-            too_many_repetitions = False
-            for i in range(self.number_of_trials - self.max_rep):
-                same_1 = True
-                same_2 = True
-                same_3 = True
-                same_4 = True
-                same_5 = True
-                same_6 = True
-                for j in range(i,i+self.max_rep):
-                    if inversions[j,0] != inversions[i,0]:
-                        same_1 = False
-                        k = i
-                    if inversions[j,1] != inversions[i,1]:
-                        same_2 = False
-                        k = i
-                    if inversions[j,2] != inversions[i,2]:
-                        same_3 = False
-                        k = i
-                    if timing[j,5] != timing[i,5]:
-                        same_4 = False
-                        k = i
-                    if timing[j,6] != timing[i,6]:
-                        same_5 = False
-                        k = i
-                    if timing[j,8] != timing[i,8]:
-                        same_6 = False
-                        k = i
-                if same_1 == True or same_2 == True or same_3 == True or same_4 == True or same_5 == True or same_6 == True :
-                        too_many_repetitions = True
-                        break
-
-        print 'mean delay time is ', sum(timing[:,1])/self.number_of_trials
-        print 'mean baseline time is ', sum(timing[:,3])/self.number_of_trials
-        return timing, difficulties, inversions, diff_gap
+        return timing, difficulties, inversions, EV_gap, blocks
 

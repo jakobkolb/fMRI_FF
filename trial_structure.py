@@ -56,6 +56,8 @@ eye_tracker.setOfflineMode()
 #-----------------------------------------------------------------------------
 print 'trial setup'
 init_parameters = init()
+#generate trial parameters for the upcomming trials
+timing, difficulties, inversions, EV_gap, blocks = init_parameters.load_trial_parameters()
 #-----------------------------------------------------------------------------
 
 
@@ -84,18 +86,12 @@ win.flip()
 core.wait(2)
 #-----------------------------------------------------------------------------
 
-#randomize block kind
-#-----------------------------------------------------------------------------
-blocks = []
-j = random.randint(1,np.shape(globvar.trial_modi)[0])
-for i in range(globvar.blocks[0]):
-    blocks.append(globvar.trial_modi[(i+j)%np.shape(globvar.trial_modi)[0]])
-random.shuffle(blocks) 
-#-----------------------------------------------------------------------------
 
 #iterate over requested number of blocks and set parameters
 #-----------------------------------------------------------------------------
 for block, kind in enumerate(blocks):
+    i1 = block*globvar.blocks[1]
+    i2 = (block+1)*globvar.blocks[1]
     #announce block!
     if kind == 'math':
         announce_text = 'Arithmetic'
@@ -114,24 +110,23 @@ for block, kind in enumerate(blocks):
     #write a short note to the output file, if a new block starts
     print>>output_user_interaction, 'start ', kind, ' block ' + `block`
     print>>output_trial_timing, 'start ', kind, ' block ' + `block`
-    #generate trial parameters for the upcomming trials
-    timing, difficulties, inversions, diff_gap = init_parameters.rand_trial_parameters(kind)
+
 #-----------------------------------------------------------------------------
 
 #run the actual trials and record user input
 #-----------------------------------------------------------------------------
-    for i in range(0,globvar.blocks[1]):
+    for i in range(i1,i2):
         if eyelink_ver != 0:
             if eye_tracker.isConnected()==False:
                 print 'SCANNER CONNECTION LOST'
             pylink.getEYELINK().startRecording(1, 1, 0, 0)
         #set trial parameters
-        current_trial = trial(kind, diff_gap[i], win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
+        current_trial = trial(kind, EV_gap[i], win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
         #run trial
         current_trial.run_trial()
         #data from trial.getData() is kind, user_active[y,n], input_key, difficulty_chosen, reward_chosen, dif*rew, 
         #                                                                difficulty_rejected, reward_rejected, dif*rew
-        print 'stimuli type is ', current_trial.name, 'difficuly gap is ', diff_gap[i]
+        print 'stimuli type is ', current_trial.name, 'difficuly gap is ', EV_gap[i]
         print 'user difficulty choice is ', current_trial.user_input[2]
         print 'user reaction time is ', current_trial.tR
         #save data from each trial, timing of slides, user input and inversions of stimuli
