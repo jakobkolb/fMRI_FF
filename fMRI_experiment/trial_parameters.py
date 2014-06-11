@@ -6,7 +6,7 @@
 #time for one fmri measurement
 fmri_time = 1.5                                     
 #Number settings for block structure given as [number of blocks, trials per block]
-blocks = [3,20]
+blocks = [3,15]
 #modi of trials to be taken, out of math, dot, audio
 trial_modi = ['dot', 'math', 'audio']
 #spacing of the objects on slides

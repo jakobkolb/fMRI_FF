@@ -2,6 +2,7 @@ import numpy as np
 import trial_parameters as tp
 import random
 import pickle
+import datetime
 
 blocks = []
 j = random.randint(1,np.shape(tp.trial_modi)[0])
@@ -124,6 +125,10 @@ print 'average times that difficult task is first is', (inversions[:,0]==1).sum(
 print 'averate times that high reward is left is', (inversions[:,1]==1).sum()/float(number_of_trials)
 print 'averate times that marker_1 is left on options slide is', (inversions[:,2]==1).sum()/float(number_of_trials)
 print 'average times that marker_1 is left on decision slide is', (inversions[:,3]==1).sum()/float(number_of_trials)
+
+print sum(sum(timing))
+
+print 'the total duration of the run is', str(datetime.timedelta(seconds=int(sum(sum(timing[:,:]))*tp.fmri_time)))
 
 trial_parameters = {}
 trial_parameters['blocks'] = blocks
