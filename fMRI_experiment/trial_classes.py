@@ -32,29 +32,32 @@ class trial:
 
 #initialization of the trial parameters
 
-    def __init__(self, kind, gap, win, timing, spacing, difficulties, inversions):
+    def __init__(self, kind, win, trial_number):
         self.name           = kind
-        self.diff_gap       = gap
         self.window         = win
-        self.flip           = inversions
-        self.pos_stim_1     = spacing[0]    #position of right stimulus
-        self.pos_stim_2     = spacing[1]    #position of left stimulus
-        self.pos_marker_1   = spacing[2]    #position of motor marker for stim_1
-        self.pos_marker_2   = spacing[3]    #position of motor marker for stim_2
-        self.pos_reward_1   = spacing[4]    #position of the prize for task 1
-        self.pos_reward_2   = spacing[5]    #position of the prize for task 2
-        self.pos_fixcross   = spacing[6]    #position of fixation cross
-        self.dif_easy       = difficulties[0] #difficulty for easy stimulus
-        self.dif_hard       = difficulties[1] #difficulty for hard stimulus
-        self.time_stim_1    = timing[0]*trial.ts  #display time for stimulus
-        self.time_break_1   = timing[1]*trial.ts  #display time for first delay
-        self.time_stim_2    = timing[2]*trial.ts  #display time for stimulus
-        self.time_break_2   = timing[3]*trial.ts  #display time for first delay
-        self.time_delay_1   = timing[4]*trial.ts  #display time for first delay
-        self.time_options   = timing[5]*trial.ts  #display time for decision screen
-        self.time_delay_2   = timing[6]*trial.ts  #display time for first delay
-        self.time_decision  = timing[7]*trial.ts  #display time for decision screen
-        self.time_baseline  = timing[8]*trial.ts  #display time for baseline
+        self.flip           = globvar.run_parameters['inversions'][trial_number,:]
+        self.pos_stim_1     = globvar.spacing[0]    #position of right stimulus
+        self.pos_stim_2     = globvar.spacing[1]    #position of left stimulus
+        self.pos_marker_1   = globvar.spacing[2]    #position of motor marker 1
+        self.pos_marker_2   = globvar.spacing[3]    #position of motor marker 2
+        self.pos_reward_1   = globvar.spacing[4]    #position of the prize for task 1
+        self.pos_reward_2   = globvar.spacing[5]    #position of the prize for task 2
+        self.pos_fixcross   = globvar.spacing[6]    #position of fixation cross
+        self.dif_stim_1     = globvar.run_parameters['difficulties'][trial_number,0]       #difficulty for fist stimulus
+        self.dif_stim_2     = globvar.run_parameters['difficulties'][trial_number,1]       #difficulty for second stimulus
+        self.par_stim_1     = globvar.run_parameters['stim_parameters'][trial_number,0]
+        self.par_stim_2     = globvar.run_parameters['stim_parameters'][trial_number,1]
+        self.reward_1       = globvar.run_parameters['rewards'][trial_number,0]
+        self.reward_2       = globvar.run_parameters['rewards'][trial_number,1]
+        self.time_stim_1    = globvar.run_parameters['timing'][trial_number,0]*trial.ts  #display time for stimulus
+        self.time_break_1   = globvar.run_parameters['timing'][trial_number,1]*trial.ts  #display time for first delay
+        self.time_stim_2    = globvar.run_parameters['timing'][trial_number,2]*trial.ts  #display time for stimulus
+        self.time_break_2   = globvar.run_parameters['timing'][trial_number,3]*trial.ts  #display time for first delay
+        self.time_delay_1   = globvar.run_parameters['timing'][trial_number,4]*trial.ts  #display time for first delay
+        self.time_options   = globvar.run_parameters['timing'][trial_number,5]*trial.ts  #display time for decision screen
+        self.time_delay_2   = globvar.run_parameters['timing'][trial_number,6]*trial.ts  #display time for first delay
+        self.time_decision  = globvar.run_parameters['timing'][trial_number,7]*trial.ts  #display time for decision screen
+        self.time_baseline  = globvar.run_parameters['timing'][trial_number,8]*trial.ts  #display time for baseline
         trial.trialCount    += 1
 #define different slides for the trial (A: Stimulus, B: Delay, C: Decision, D: Baseline)
     def getData(self):
@@ -75,25 +78,18 @@ class trial:
         return  self.name, self.t_stimuli, self.t_delay_1, self.t_options, self.t_delay_2, self.t_response, self.t_baseline, self.t_end, self.tR
 
     def present_stimuli(self):
-        #reverse task position and time if flip[1] == -1. default is easy first on the left, hard second on the right
-        if self.flip[0] == 1:
-            stime1, spos1 = 0, self.pos_stim_1
-            stime2, spos2 = 1, self.pos_stim_2
-        elif self.flip[0] == -1:
-            stime1, spos1 = 1, self.pos_stim_2
-            stime2, spos2 = 0, self.pos_stim_1
-
         #define fixation cross
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
-        #define stimuli here as stim_1 and stim_2 according to self.name
-        #stim_1 is easy, stim_2 is hard
+        
+        #define stimuli here as stim_1 and stim_2 according to self.name with difficulties from randomization
         #'dot' is for random dot movement, 'math' is for arithmetic task and 'noise' will be for noise task
+        
         if self.name=='dot':
             #randomly choose direction of rdm and according correct answer
             dot_direction_1, self.correct_answer_easy = random.choice(globvar.possible_rdm_directions)
             dot_direction_2, self.correct_answer_hard = random.choice(globvar.possible_rdm_directions)
             #setup rdm coherences from difficulty levels
-            dot_coherence_1, dot_coherence_2 = self.dif_easy, self.dif_hard
+            dot_coherence_1, dot_coherence_2 = self.par_stim_1, self.par_stim_2
             stim = []
             stim.extend([visual.DotStim(
                     #constant parameters for dot motion
@@ -102,7 +98,7 @@ class trial:
                     #variable parameters for dot motion
                     coherence=dot_coherence_1,
                     dir=dot_direction_1,
-                    fieldPos=spos1
+                    fieldPos=self.pos_stim_1
                     )])
             stim.extend([visual.DotStim(
                     #constant parameters for dot motion
@@ -111,7 +107,7 @@ class trial:
                     #variable parameters for dot motion
                     coherence=dot_coherence_2,
                     dir=dot_direction_2,
-                    fieldPos=spos2
+                    fieldPos=self.pos_stim_2
                     )])
             t1 = self.time_stim_1+self.time_stim_2+self.time_break_1+self.time_break_2
             dot_timer = core.CountdownTimer(t1)
@@ -120,9 +116,9 @@ class trial:
                 if (t>=t1):
                     break
                 if (0<t and t<self.time_stim_1):
-                    stim[stime1].draw()
+                    stim[0].draw()
                 elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
-                    stim[stime2].draw()
+                    stim[1].draw()
                 cross.draw()
                 self.window.flip()
                 core.wait(0.01)
@@ -134,11 +130,8 @@ class trial:
                 self.numbers_to_sum[i] = np.random.randint(1,21)
             self.correct_answer = sum(self.numbers_to_sum)
             #build intervals around the correct answer
-            easy_interval = '+/-'+`int(self.dif_easy)`
-            hard_interval = '+/-'+`int(self.dif_hard)`
-            #create stimuli for the intervals
-#            stim_1 = visual.TextStim(self.window, text=easy_interval, pos=spos1)
-#            stim_2 = visual.TextStim(self.window, text=hard_interval, pos=spos2)
+            easy_interval = '+/-'+`int(self.par_stim_1)`
+            hard_interval = '+/-'+`int(self.par_stim_2)`
 
             #Ofset of numbers from absolute task position
             offset = globvar.size
@@ -173,16 +166,10 @@ class trial:
                 t = t1 - dot_timer.getTime()
                 if (t>=t1):
                     break
-                if stime1 == 0 :
-                    if (0<t and t<self.time_stim_1):
-                        [stim.draw() for stim in stim_1]
-                    elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
-                        [stim.draw() for stim in stim_2]
-                elif stime1 == 1 :
-                    if (0<t and t<self.time_stim_1):
-                        [stim.draw() for stim in stim_2]
-                    elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
-                        [stim.draw() for stim in stim_1]
+                if (0<t and t<self.time_stim_1):
+                    [stim.draw() for stim in stim_1]
+                elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
+                    [stim.draw() for stim in stim_2]
                 cross.draw()
                 self.window.flip()
                 core.wait(0.01)
@@ -223,8 +210,8 @@ class trial:
             #create white noise
             noise = np.random.randn(sound_frames)
             #set noise levels
-            noise_level_1 = self.dif_easy
-            noise_level_2 = self.dif_hard
+            noise_level_1 = self.par_stim_1
+            noise_level_2 = self.par_stim_2
             #ad noise to signals
             stim_1_data = np.zeros((sound_frames))
             stim_2_data = np.zeros((sound_frames))
@@ -266,9 +253,9 @@ class trial:
             stim_file_2.close()
             file_1.close()
             file_2.close()
-            #generate sound stimulus. open stim files according to stim times (invert play order according to flip)
-            audit_stim_1 = sound.Sound(value=stim_files[stime1], sampleRate = file_1_parameters[3])
-            audit_stim_2 = sound.Sound(value=stim_files[stime2], sampleRate = file_1_parameters[3])
+            #generate sound stimulus. open sound files in row
+            audit_stim_1 = sound.Sound(value=stim_files[0], sampleRate = file_1_parameters[3])
+            audit_stim_2 = sound.Sound(value=stim_files[1], sampleRate = file_1_parameters[3])
             speaker_symbol = visual.ImageStim(self.window, image=globvar.speaker_symbol, pos=(0,globvar.size), size = 0.2)
             #draw other objects
             cross.draw()
@@ -283,7 +270,7 @@ class trial:
                 if (t>=t1):
                     break
                 if (0<t and start1 == False):
-                    audit_stim_1.play(loops = -1)
+                    audit_stim_1.play(loops = 0)
                     start1 = True
                     print '1 started'
                 if (0<t and t<self.time_stim_1):
@@ -294,7 +281,7 @@ class trial:
                     stop1 = True
                     print '1 stopped'
                 elif (self.time_stim_1+self.time_break_1<t and start2 == False):
-                    audit_stim_2.play(loops = -1)
+                    audit_stim_2.play(loops = 0)
                     start2 = True
                     print '2 started'
                 elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
@@ -305,12 +292,6 @@ class trial:
                     stop2 = True
                     print '2 stopped'
                 self.window.flip()
-        else :
-            stim_1 = visual.TextStim(self.window, text='someotherstim1', pos=spos1)
-            stim_2 = visual.TextStim(self.window, text='someotherstim2', pos=spos2)
-            stim_1.draw()
-            stim_2.draw()
-            cross.draw()
 
 #Option slide with markers and rewards
     def present_options(self):
@@ -321,35 +302,16 @@ class trial:
         elif self.flip[2] == -1:
             mpos1 = self.pos_marker_2
             mpos2 = self.pos_marker_1
-        #reverse reward position if flip[1] == -1. default is easy on the left, hard on the right
-        if self.flip[1] == 1:
-            rpos1 = self.pos_reward_1
-            rpos2 = self.pos_reward_2
-        elif self.flip[1] == -1:
-            rpos1 = self.pos_reward_2
-            rpos2 = self.pos_reward_1
-
         #define marker stimuli with files defined in globvar.py
         print globvar.file_marker_1, mpos1
         marker_1= visual.ImageStim(self.window, image=globvar.file_marker_1, pos=mpos1)
         marker_2= visual.ImageStim(self.window, image=globvar.file_marker_2, pos=mpos2)
         #define fixation cross
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
-        #calculate random reward (equally distributed in intervals defined in globvar.py)
-        if self.diff_gap == 'small':
-            self.reward_1 = round(globvar.reward_easy_s[0] + 
-                    (globvar.reward_easy_s[1] - globvar.reward_easy_s[0])*np.random.rand(),2)
-            self.reward_2 = round(globvar.reward_hard_s[0] + 
-                    (globvar.reward_hard_s[1] - globvar.reward_hard_s[0])*np.random.rand(),2)
-        if self.diff_gap == 'large':
-            self.reward_1 = round(globvar.reward_easy_l[0] + 
-                    (globvar.reward_easy_l[1] - globvar.reward_easy_l[0])*np.random.rand(),2)
-            self.reward_2 = round(globvar.reward_hard_l[0] + 
-                    (globvar.reward_hard_l[1] - globvar.reward_hard_l[0])*np.random.rand(),2)
         #define reward stimuli according to the possitions of the easy and hard_l task
         eur = u"\u20AC"
-        reward_1 = visual.TextStim(self.window, text= `round(self.reward_1,2)` + eur, pos=rpos1)
-        reward_2 = visual.TextStim(self.window, text= `round(self.reward_2,2)` + eur, pos=rpos2)
+        reward_1 = visual.TextStim(self.window, text= `round(self.reward_1,2)` + eur, pos=self.pos_reward_1)
+        reward_2 = visual.TextStim(self.window, text= `round(self.reward_2,2)` + eur, pos=self.pos_reward_2)
 
         marker_1.draw()
         marker_2.draw()
@@ -403,16 +365,7 @@ class trial:
 
     def present_response(self):
         print 'present slide C'
-        #load actual difficulties from trial_parameters according to trial modus
-        if self.name == 'dot':
-            expected_performance_easy = globvar.dot_motion_difficulty[0]
-            expected_performance_hard = globvar.dot_motion_difficulty[1]
-        elif self.name == 'audio':
-            expected_performance_easy = globvar.audio_trial_difficulty[0]
-            expected_performance_hard = globvar.audio_trial_difficulty[1]
-        elif self.name == 'math':
-            expected_performance_easy = globvar.math_trial_difficulty[0]
-            expected_performance_hard = globvar.math_trial_difficulty[1]
+        
         self.window.clearBuffer()
         if self.flip[3] == 1:
             mpos1 = self.pos_marker_1
@@ -447,24 +400,24 @@ class trial:
                         choice = 1
                     elif key == 'right':
                         choice = -1
-                    reward_ind = [1,2,3]
-                    diff_ind = [0,2,3]
-                    print prod(self.flip[reward_ind])
+                    marker_flips = [2,3]
+                    print prod(self.flip[marker_flips])*choice, self.flip[marker_flips], choice
+                    print prod(self.flip[marker_flips])*choice == -1
                     #figure out which reward/difficulty level the user accepted/rejected by cross checking his choice
                     #with the position of the elements in the trial. by default easy trial is first, low reward is left and
                     #marker_1 is always left each deviation of this setup is given by a flip = -1.
-                    if prod(self.flip[reward_ind])*choice == 1:
+                    if prod(self.flip[marker_flips])*choice == 1:
+                        print 'straight choice'
                         accepted_choice_reward = self.reward_1
                         rejected_choice_reward = self.reward_2
-                    elif prod(self.flip[reward_ind]*choice) == -1:
+                        accepted_choice_dif = self.dif_stim_1
+                        rejected_choice_dif = self.dif_stim_2
+                    elif prod(self.flip[marker_flips])*choice == -1:
+                        print 'queer choice'
                         accepted_choice_reward = self.reward_2
                         rejected_choice_reward = self.reward_1
-                    if prod(self.flip[diff_ind])*choice == 1:
-                        accepted_choice_dif = expected_performance_easy
-                        rejected_choice_dif = expected_performance_hard
-                    if prod(self.flip[diff_ind])*choice == -1:
-                        accepted_choice_dif = expected_performance_hard
-                        rejected_choice_dif = expected_performance_easy
+                        accepted_choice_dif = self.dif_stim_2
+                        rejected_choice_dif = self.dif_stim_1
                     
                     user_active = True
                     input_correc = True
@@ -562,14 +515,86 @@ class init:
         
     def load_trial_parameters(self):
         
-        with open('run_parameters.p', 'rb') as fp:
-                    data = pickle.load(fp)
-        
-        timing = data['timing']
-        difficulties = data['difficulties']
-        inversions = data['inversions']
-        EV_gap = data['EV_gap']
-        blocks = data['blocks']
+        with open('run_parameters/run_'+`globvar.run_number`+'_parameters_.p', 'rb') as fp:
+                    globvar.run_parameters = pickle.load(fp)
+                    
+        blocks = globvar.run_parameters['blocks']
+        EV_gap = globvar.run_parameters['EV_gap']
+        timing = globvar.run_parameters['timing']
+        inversions = globvar.run_parameters['inversions']
 
-        return timing, difficulties, inversions, EV_gap, blocks
+
+        #randomized variables with user specific parameters:
+        EV_values = np.zeros((self.number_of_trials,2))
+        #deduced variables:     first/second participant performance aka. difficulties, fist/second stim_parameter
+        difficulties = np.zeros((self.number_of_trials,2))
+        stim_parameters = np.zeros((self.number_of_trials,2))
+
+        #calculated variables:  Rewards(left, right)
+        rewards = np.zeros((self.number_of_trials,2))
+
+
+        #randomize EV_values according to EV_gap and higher_EV_possition_inversion
+
+        for i in range(globvar.blocks[0]):
+            i1 = i*globvar.blocks[1]
+            i2 = (i+1)*globvar.blocks[1]
+            for j in range(i1,i2):
+                if EV_gap[j] == 'small':
+                    EV_high = globvar.EV_high_s
+                    EV_low = globvar.EV_low_s
+                elif EV_gap[j] == 'large':
+                    EV_high = globvar.EV_high_l
+                    EV_low = globvar.EV_low_l
+                if inversions[j,1] == 1:
+                    EV_values[j,0] = EV_high[0] + (EV_high[1] - EV_high[0])*np.random.random()
+                    EV_values[j,1] = EV_low[0] + (EV_low[1] - EV_low[0])*np.random.random()
+                elif inversions[j,1] == -1:
+                    EV_values[j,1]=  EV_high[0] + (EV_high[1] - EV_high[0])*np.random.random()
+                    EV_values[j,0] = EV_low[0] + (EV_low[1] - EV_low[0])*np.random.random()
+
+        #fig1 = mp.figure()
+        #mp.hist(EV_value[:,0] - EV_value[:,1], bins = 2)
+        #fig2 = mp.figure()
+        #mp.hist(abs(EV_value[:,0] - EV_value[:,1]), bins = 2)
+        #mp.show()
+
+        #set first/second expected participant performance and stimulus parameter
+
+        for i in range(globvar.blocks[0]):
+            kind = blocks[i]
+            i1 = i*globvar.blocks[1]
+            i2 = (i+1)*globvar.blocks[1]
+            for j in range(i1,i2):
+                if kind == 'math':
+                    difficulty = globvar.math_trial_difficulty
+                    stim_parameter = globvar.math_trial_interval
+                elif kind == 'dot':
+                    difficulty = globvar.dot_motion_difficulty
+                    stim_parameter = globvar.dot_motion_trial_coherence
+                elif kind == 'audio':
+                    difficulty = globvar.audio_trial_difficulty
+                    stim_parameter = globvar.audio_trial_stn_ratio
+                if inversions[j,0] == 1:
+                    difficulties[j,:] = difficulty
+                    stim_parameters[j,:] = stim_parameter
+                elif inversions[j,0] == -1:
+                    difficulties[j,:] = [difficulty[1],difficulty[0]]
+                    stim_parameters[j,:] = [stim_parameter[1], stim_parameter[0]]
+
+        #calculate left/right rewards from participant performance and EV
+
+        for i in range(self.number_of_trials):
+            for j in range(2):
+                rewards[i,j] = EV_values[i,j]/difficulties[i,j]
+
+        globvar.run_parameters['EV_values'] = EV_values
+        globvar.run_parameters['difficulties'] = difficulties
+        globvar.run_parameters['stim_parameters'] = stim_parameters
+        globvar.run_parameters['rewards'] = rewards
+
+        with open('full_run_parameters_participant'+`globvar.participant_id`+'run'+`globvar.run_number`+'.p', 'wb') as fb:
+                    pickle.dump(globvar.run_parameters, fb)
+
+        return blocks, EV_gap, timing, inversions, EV_values, difficulties, stim_parameters, rewards
 

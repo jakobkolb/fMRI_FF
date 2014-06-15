@@ -3,10 +3,12 @@
 #-----------------------------------------------------------------------------
 #general settings for order of trial modi and object positions
 #-----------------------------------------------------------------------------
+#Participant ID (with default value)
+participant_id = 55
 #time for one fmri measurement
 fmri_time = 1.5                                     
 #Number settings for block structure given as [number of blocks, trials per block]
-blocks = [3,15]
+blocks = [3,16]
 #modi of trials to be taken, out of math, dot, audio
 trial_modi = ['dot', 'math', 'audio']
 #spacing of the objects on slides
@@ -30,6 +32,9 @@ possible_rdm_directions = [[0,'right'],[180,'left']]
 window_size = (800,600)
 #start in Full Screen ?
 full_screen = False
+#dictionary for all parameters of one run
+run_parameters = {}
+run_number = 1
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
@@ -48,18 +53,16 @@ time_break_2 = 0.2
 mean_delay_1_trs = 2
 time_options = 1.0
 mean_delay_2_trs = 2
-time_response = 1
-mean_baseline_trs = 3
+time_response = 1.
+mean_baseline_trs = 2
 #parameter to fix shape of geometric distribution
 geometric_parameter = 'mean'
 #number of ts neccesary to consider a delay to be "long"
-long_trial_ts = 3
+long_trial_ts = 6
+#maximum time for one delay period i ts
+max_delay_ts = 8
 #number of long trials neccessary
 long_trial_number = 1
-#desired delay average in fmri time units
-mean_delay_average = 2
-#desired baseline average in fmir time units
-mean_baseline_average = 3
 #maximum number of repetitions in randomization i.e max same trial types, equal delay times etc in a row
 max_rep = 4
 #-----------------------------------------------------------------------------
@@ -67,12 +70,12 @@ max_rep = 4
 #-----------------------------------------------------------------------------
 #settings for difficulties of tasks and monetary reward
 #-----------------------------------------------------------------------------
-#values for reward for easy and hard tasks in the form [min_reward,max_reward] in Euro
-#settigs for small and large difficulty gap are marked with _s and _l respectively
-reward_hard_s = [0.5,0.6]          
-reward_easy_s = [0.3,0.5]
-reward_hard_l = [0.8,1]          
-reward_easy_l = [0.1,0.3]
+#values for Expected Value of user decision for small and large EV gap in the form [min_EV,max_EV]
+#settigs for small and large EV gap are marked with _s and _l respectively
+EV_high_s = [0.6,0.8]          
+EV_low_s = [0.4,0.6]
+EV_high_l = [0.8,1]          
+EV_low_l = [0.2,0.4]
 #difficulty settings for different trial modi in the form [easy, hard] 
 #and corresponding expected participant performance for [easy, hard]
 #for math trial:size of interval for correct answer

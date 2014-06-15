@@ -57,7 +57,7 @@ eye_tracker.setOfflineMode()
 print 'trial setup'
 init_parameters = init()
 #generate trial parameters for the upcomming trials
-timing, difficulties, inversions, EV_gap, blocks = init_parameters.load_trial_parameters()
+blocks, EV_gap, timing, inversions, EV_values, difficulties, stim_parameters, rewards = init_parameters.load_trial_parameters()
 #-----------------------------------------------------------------------------
 
 
@@ -121,7 +121,7 @@ for block, kind in enumerate(blocks):
                 print 'SCANNER CONNECTION LOST'
             pylink.getEYELINK().startRecording(1, 1, 0, 0)
         #set trial parameters
-        current_trial = trial(kind, EV_gap[i], win, timing[i,:], globvar.spacing, difficulties[i,:], inversions[i,:])
+        current_trial = trial(kind,win,i) 
         #run trial
         current_trial.run_trial()
         #data from trial.getData() is kind, user_active[y,n], input_key, difficulty_chosen, reward_chosen, dif*rew, 
