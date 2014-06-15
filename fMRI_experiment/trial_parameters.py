@@ -80,13 +80,13 @@ EV_low_l = [0.2,0.4]
 #and corresponding expected participant performance for [easy, hard]
 #for math trial:size of interval for correct answer
 math_trial_interval       = [10,3]
-math_trial_difficulty     = [0.8,0.2]
+math_trial_difficulty     = [0.9,0.65]
 #for rdm trial:coherence of the dot motion values between 0 and 1
 dot_motion_trial_coherence  = [0.9,0.5]
-dot_motion_difficulty       = [0.8,0.2]
+dot_motion_difficulty       = [0.9,0.65]
 #for the audio trial: signal to noise ratio. 0.2 means 20% noise, 80% signal(i.e. ba da ru lu)
-audio_trial_stn_ratio       = [0.1,0.43]
-audio_trial_difficulty      = [0.8,0.2]
+audio_trial_stn_ratio       = [0.35,0.6]
+audio_trial_difficulty      = [0.9,0.65]
 #-----------------------------------------------------------------------------
 
 

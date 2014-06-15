@@ -216,8 +216,8 @@ class trial:
             stim_1_data = np.zeros((sound_frames))
             stim_2_data = np.zeros((sound_frames))
             for i in range(sound_frames):
-                stim_1_data[i] = (file_1_data[i]*(1-noise_level_1) + noise[i]*noise_level_1*max_amp_file_1)/2.
-                stim_2_data[i] = (file_2_data[i]*(1-noise_level_2) + noise[i]*noise_level_2*max_amp_file_2)/2.
+                stim_1_data[i] = (file_1_data[i]*(1-noise_level_1) + noise[i]*noise_level_1*file_1_data[i])/2.
+                stim_2_data[i] = (file_2_data[i]*(1-noise_level_2) + noise[i]*noise_level_2*file_2_data[i])/2.
                 #cut sound tracks if their combined amplitude exceeds the max_amplitude of the source file
                 if abs(stim_1_data[i]) > max_amp_file_1:
                     sign_1 = file_1_data[i]/abs(file_1_data[i])
