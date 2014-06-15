@@ -11,7 +11,7 @@
 #----------------------------------------------------------------------------
 #trial is activated by calling the self.run_trail() method.
 
-from psychopy import core, visual, sound, event
+from psychopy import core, visual, sound, event, gui
 import numpy as np
 import random
 import wave
@@ -111,6 +111,7 @@ class trial:
                     )])
             t1 = self.time_stim_1+self.time_stim_2+self.time_break_1+self.time_break_2
             dot_timer = core.CountdownTimer(t1)
+            nout = 0
             while True :
                 t = t1 - dot_timer.getTime()
                 if (t>=t1):
@@ -119,6 +120,20 @@ class trial:
                     stim[0].draw()
                 elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
                     stim[1].draw()
+
+                if(t>=0 and nout == 0):
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_visual_stim', 1, 'difficulty =', self.dif_stim_1
+                if(t>=self.time_stim_1 and nout == 1):
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_break', 1
+                if(t>self.time_stim_1+self.time_break_1 and nout == 2):
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_visual_stim', 2, 'difficulty =', self.dif_stim_2
+                if(t>self.time_stim_1+self.time_break_1+self.time_stim_2 and nout == 3):
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_break', 2
+               
                 cross.draw()
                 self.window.flip()
                 core.wait(0.01)
@@ -146,8 +161,8 @@ class trial:
             stim_2 = []
             for i in range(4):
                 #calculate the positions of the numbers relative to the absolute task position
-                p1 = tuple(x+y for x,y in zip(spos1, relative_number_possitions[i]))
-                p2 = tuple(x+y for x,y in zip(spos2, relative_number_possitions[i]))
+                p1 = tuple(x+y for x,y in zip(self.pos_stim_1, relative_number_possitions[i]))
+                p2 = tuple(x+y for x,y in zip(self.pos_stim_2, relative_number_possitions[i]))
                 #add all numbers belonging to one task to one list.
                 stim_1.extend([visual.TextStim(self.window, text=`int(numbers[0,i])`, pos=p1)])
                 stim_2.extend([visual.TextStim(self.window, text=`int(numbers[1,i])`, pos=p2)])
@@ -162,6 +177,7 @@ class trial:
             
             t1 = self.time_stim_1+self.time_stim_2+self.time_break_1+self.time_break_2
             dot_timer = core.CountdownTimer(t1)
+            nout = 0
             while True :
                 t = t1 - dot_timer.getTime()
                 if (t>=t1):
@@ -170,6 +186,22 @@ class trial:
                     [stim.draw() for stim in stim_1]
                 elif (self.time_stim_1+self.time_break_1<t and t<self.time_stim_1 + self.time_break_1 + self.time_stim_2):
                     [stim.draw() for stim in stim_2]
+
+                if(t>=0 and nout == 0):
+                    nout += 1
+                    print self.dif_stim_1, self.par_stim_1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_arithmetic_stim', 1, 'difficulty =', self.dif_stim_1
+                if(t>=self.time_stim_1 and nout == 1):
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_break', 1
+                if(t>self.time_stim_1+self.time_break_1 and nout == 2):
+                    print self.dif_stim_2, self.par_stim_2
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_arithmetic_stim', 2, 'difficulty =', self.dif_stim_2
+                if(t>self.time_stim_1+self.time_break_1+self.time_stim_2 and nout == 3):
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_break', 2
+               
                 cross.draw()
                 self.window.flip()
                 core.wait(0.01)
@@ -265,6 +297,7 @@ class trial:
             dot_timer = core.CountdownTimer(t1)
             start1, stop1 = False, False
             start2, stop2 = False, False
+            nout = 0
             while True :
                 t = t1 - dot_timer.getTime()
                 if (t>=t1):
@@ -291,6 +324,22 @@ class trial:
                     audit_stim_2.stop()
                     stop2 = True
                     print '2 stopped'
+
+                if(t>=0 and nout == 0):
+                    nout += 1
+                    print self.dif_stim_1, self.par_stim_1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_auditory_stim', 1, 'difficulty =', self.dif_stim_1
+                if(t>=self.time_stim_1 and nout == 1):
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_break', 1
+                if(t>self.time_stim_1+self.time_break_1 and nout == 2):
+                    print self.dif_stim_2, self.par_stim_2
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_auditory_stim', 2, 'difficulty =', self.dif_stim_2
+                if(t>self.time_stim_1+self.time_break_1+self.time_stim_2 and nout == 3):
+                    nout += 1
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_break', 2
+               
                 self.window.flip()
 
 #Option slide with markers and rewards
@@ -318,6 +367,7 @@ class trial:
         reward_1.draw()
         reward_2.draw()
         cross.draw()
+        print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_option_presentation'
         self.window.flip()
         core.wait(self.time_options)
 
@@ -332,6 +382,7 @@ class trial:
         event.clearEvents()
         self.premature_input = []
         active = False
+        print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_delay', 1
         self.window.flip()
         while timer.getTime() > 0:
             for key in event.getKeys():
@@ -352,6 +403,7 @@ class trial:
         event.clearEvents()
         self.premature_input = []
         active = False
+        print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_delay', 2
         self.window.flip()
         while timer.getTime() > 0:
             for key in event.getKeys():
@@ -386,14 +438,17 @@ class trial:
 
         timer = core.CountdownTimer(self.time_decision)
         #present response slide
+        print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_option_presentation'
         self.window.flip()
         #wait for time_decision seconds for user input
         #record keystroke here as [input==True, key, rt]
         self.user_input = []
         user_active = False
         input_correct = False
+        nout = 0
         while timer.getTime()>=0:
             for key in event.getKeys(keyList=['left','right', 'p', 'escape']):
+                print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'user_input', key
                 if key in ['left', 'right']:
                     self.tR = self.time.getTime()-self.t_response
                     if key == 'left':
@@ -401,24 +456,28 @@ class trial:
                     elif key == 'right':
                         choice = -1
                     marker_flips = [2,3]
+                    EV_flips = [1,2,3]
                     print prod(self.flip[marker_flips])*choice, self.flip[marker_flips], choice
                     print prod(self.flip[marker_flips])*choice == -1
                     #figure out which reward/difficulty level the user accepted/rejected by cross checking his choice
                     #with the position of the elements in the trial. by default easy trial is first, low reward is left and
                     #marker_1 is always left each deviation of this setup is given by a flip = -1.
                     if prod(self.flip[marker_flips])*choice == 1:
-                        print 'straight choice'
                         accepted_choice_reward = self.reward_1
                         rejected_choice_reward = self.reward_2
                         accepted_choice_dif = self.dif_stim_1
                         rejected_choice_dif = self.dif_stim_2
                     elif prod(self.flip[marker_flips])*choice == -1:
-                        print 'queer choice'
                         accepted_choice_reward = self.reward_2
                         rejected_choice_reward = self.reward_1
                         accepted_choice_dif = self.dif_stim_2
                         rejected_choice_dif = self.dif_stim_1
+                    if prod(self.flip[EV_flips])*choice == 1:
+                        accepted_EV = 'high'
+                    elif prod(self.flip[EV_flips])*choice == -1:
+                        accepted_EV = 'low'
                     
+                    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'choice_difficulty', accepted_choice_dif, 'choice_EV', accepted_choice_reward*accepted_choice_dif, '('+accepted_EV+')'
                     user_active = True
                     input_correc = True
                     self.user_input = [1,key,
@@ -453,6 +512,7 @@ class trial:
         self.window.clearBuffer()
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
         cross.draw()
+        print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_baseline'
         self.window.flip()
         core.wait(self.time_baseline)
 
@@ -517,7 +577,41 @@ class init:
         
         with open('run_parameters/run_'+`globvar.run_number`+'_parameters_.p', 'rb') as fp:
                     globvar.run_parameters = pickle.load(fp)
-                    
+
+    def participant_parameter_dialog(self):
+       # first, we ask for the subject id etc
+       myDlg = gui.Dlg(title="Flavia's fMRI Study")
+       myDlg.addText('Subject info')
+       myDlg.addField('ID:', globvar.participant_id)
+       myDlg.addText('run number')
+       myDlg.addField('Nr:', globvar.run_number)
+       myDlg.addText('RDM coherence')
+       myDlg.addField('easy:', globvar.dot_motion_trial_coherence[0])
+       myDlg.addField('hard:', globvar.dot_motion_trial_coherence[1])
+       myDlg.addText('Auditory noise')
+       myDlg.addField('easy:', globvar.audio_trial_stn_ratio[0])
+       myDlg.addField('hard:', globvar.audio_trial_stn_ratio[1])
+       myDlg.addText('Arithmetic range')
+       myDlg.addField('easy:', globvar.math_trial_interval[0])
+       myDlg.addField('hard:', globvar.math_trial_interval[1])
+       myDlg.addText('Expected accuracy')
+       myDlg.addField('easy:', globvar.anticipated_participant_performance[0])
+       myDlg.addField('hard:', globvar.anticipated_participant_performance[1])
+       myDlg.show()  # show dialog and wait for OK or Cancel
+       if myDlg.OK:  # then the user pressed OK
+           subjinfo = myDlg.data
+           globvar.participant_id = subjinfo[0]
+           globvar.run_number = subjinfo[1]
+           globvar.dot_motion_trial_coherence[0] = subjinfo[2]
+           globvar.dot_motion_trial_coherence[1] = subjinfo[3]
+           globvar.audio_trial_stn_ratio[0] = subjinfo[4]
+           globvar.audio_trial_stn_ratio[1] = subjinfo[5]
+           globvar.math_trial_interval[0] = subjinfo[6]
+           globvar.math_trial_interval[1] = subjinfo[7]
+           globvar.anticipated_participant_performance[0] = subjinfo[8]
+           globvar.anticipated_participant_performance[1] = subjinfo[9]
+
+    def randomize_participant_specific_variables(self):
         blocks = globvar.run_parameters['blocks']
         EV_gap = globvar.run_parameters['EV_gap']
         timing = globvar.run_parameters['timing']
@@ -566,14 +660,12 @@ class init:
             i1 = i*globvar.blocks[1]
             i2 = (i+1)*globvar.blocks[1]
             for j in range(i1,i2):
+                difficulty = globvar.anticipated_participant_performance 
                 if kind == 'math':
-                    difficulty = globvar.math_trial_difficulty
                     stim_parameter = globvar.math_trial_interval
                 elif kind == 'dot':
-                    difficulty = globvar.dot_motion_difficulty
                     stim_parameter = globvar.dot_motion_trial_coherence
                 elif kind == 'audio':
-                    difficulty = globvar.audio_trial_difficulty
                     stim_parameter = globvar.audio_trial_stn_ratio
                 if inversions[j,0] == 1:
                     difficulties[j,:] = difficulty

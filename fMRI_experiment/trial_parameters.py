@@ -32,9 +32,16 @@ possible_rdm_directions = [[0,'right'],[180,'left']]
 window_size = (800,600)
 #start in Full Screen ?
 full_screen = False
+
+
+#-----------------------------------------------------------------------------
+#Some global variables
+#-----------------------------------------------------------------------------
+
 #dictionary for all parameters of one run
 run_parameters = {}
 run_number = 1
+run_timer = []
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
@@ -76,17 +83,15 @@ EV_high_s = [0.6,0.8]
 EV_low_s = [0.4,0.6]
 EV_high_l = [0.8,1]          
 EV_low_l = [0.2,0.4]
+#anticipated participant performance aka difficulty
+anticipated_participant_performance=[0.9,0.65]
 #difficulty settings for different trial modi in the form [easy, hard] 
-#and corresponding expected participant performance for [easy, hard]
 #for math trial:size of interval for correct answer
 math_trial_interval       = [10,3]
-math_trial_difficulty     = [0.9,0.65]
 #for rdm trial:coherence of the dot motion values between 0 and 1
 dot_motion_trial_coherence  = [0.9,0.5]
-dot_motion_difficulty       = [0.9,0.65]
 #for the audio trial: signal to noise ratio. 0.2 means 20% noise, 80% signal(i.e. ba da ru lu)
 audio_trial_stn_ratio       = [0.35,0.6]
-audio_trial_difficulty      = [0.9,0.65]
 #-----------------------------------------------------------------------------
 
 
