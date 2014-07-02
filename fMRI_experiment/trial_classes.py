@@ -13,6 +13,7 @@
 
 from psychopy import core, visual, sound, event, gui
 import numpy as np
+import matplotlib.pyplot as mp
 import random
 import wave
 import trial_parameters as globvar
@@ -362,14 +363,18 @@ class trial:
         reward_1 = visual.TextStim(self.window, text= `round(self.reward_1,2)` + eur, pos=self.pos_reward_1)
         reward_2 = visual.TextStim(self.window, text= `round(self.reward_2,2)` + eur, pos=self.pos_reward_2)
 
+        event.clearEvents()
         marker_1.draw()
         marker_2.draw()
         reward_1.draw()
         reward_2.draw()
         cross.draw()
         print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_option_presentation'
+        timer = core.CountdownTimer(self.time_options)
         self.window.flip()
-        core.wait(self.time_options)
+        while timer.getTime() > 0:
+            for key in event.getKeys():
+                print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'PREMATURE INPUT', key
 
 #Delay slide 1 without interactivity
 
@@ -387,6 +392,7 @@ class trial:
         while timer.getTime() > 0:
             for key in event.getKeys():
                 self.premature_input = ['premature input',key]
+                print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'PREMATURE INPUT', key
                 active = True
         if active == False:
             self.premature_input = ['no input during delay','']
@@ -408,6 +414,7 @@ class trial:
         while timer.getTime() > 0:
             for key in event.getKeys():
                 self.premature_input = ['premature input',key]
+                print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'PREMATURE INPUT', key
                 active = True
         if active == False:
             self.premature_input = ['no input during delay','']
@@ -508,13 +515,18 @@ class trial:
 #Baseline slide
 
     def present_baseline(self):
+        timer = core.CountdownTimer(self.time_baseline)
         print 'define slide D'
+        event.clearEvents()
         self.window.clearBuffer()
         cross   = visual.TextStim(self.window, color=-1, colorSpace='rgb', text='+', pos=self.pos_fixcross)
         cross.draw()
         print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_baseline'
         self.window.flip()
-        core.wait(self.time_baseline)
+        while timer.getTime() > 0:
+            for key in event.getKeys():
+                print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'LATE INPUT', key
+
 
 #Method to run trial i.e. define slides, show for certain time, record user input. Store data.
 
@@ -583,8 +595,6 @@ class init:
        myDlg = gui.Dlg(title="Flavia's fMRI Study")
        myDlg.addText('Subject info')
        myDlg.addField('ID:', globvar.participant_id)
-       myDlg.addText('run number')
-       myDlg.addField('Nr:', globvar.run_number)
        myDlg.addText('RDM coherence')
        myDlg.addField('easy:', globvar.dot_motion_trial_coherence[0])
        myDlg.addField('hard:', globvar.dot_motion_trial_coherence[1])
@@ -601,51 +611,29 @@ class init:
        if myDlg.OK:  # then the user pressed OK
            subjinfo = myDlg.data
            globvar.participant_id = subjinfo[0]
-           globvar.run_number = subjinfo[1]
-           globvar.dot_motion_trial_coherence[0] = subjinfo[2]
-           globvar.dot_motion_trial_coherence[1] = subjinfo[3]
-           globvar.audio_trial_stn_ratio[0] = subjinfo[4]
-           globvar.audio_trial_stn_ratio[1] = subjinfo[5]
-           globvar.math_trial_interval[0] = subjinfo[6]
-           globvar.math_trial_interval[1] = subjinfo[7]
-           globvar.anticipated_participant_performance[0] = subjinfo[8]
-           globvar.anticipated_participant_performance[1] = subjinfo[9]
+           globvar.dot_motion_trial_coherence[0] = subjinfo[1]
+           globvar.dot_motion_trial_coherence[1] = subjinfo[2]
+           globvar.audio_trial_stn_ratio[0] = subjinfo[3]
+           globvar.audio_trial_stn_ratio[1] = subjinfo[4]
+           globvar.math_trial_interval[0] = subjinfo[5]
+           globvar.math_trial_interval[1] = subjinfo[6]
+           globvar.anticipated_participant_performance[0] = subjinfo[7]
+           globvar.anticipated_participant_performance[1] = subjinfo[8]
 
     def randomize_participant_specific_variables(self):
         blocks = globvar.run_parameters['blocks']
         EV_gap = globvar.run_parameters['EV_gap']
+        EV_values = globvar.run_parameters['EV_values']
         timing = globvar.run_parameters['timing']
         inversions = globvar.run_parameters['inversions']
 
 
-        #randomized variables with user specific parameters:
-        EV_values = np.zeros((self.number_of_trials,2))
         #deduced variables:     first/second participant performance aka. difficulties, fist/second stim_parameter
         difficulties = np.zeros((self.number_of_trials,2))
         stim_parameters = np.zeros((self.number_of_trials,2))
 
         #calculated variables:  Rewards(left, right)
         rewards = np.zeros((self.number_of_trials,2))
-
-
-        #randomize EV_values according to EV_gap and higher_EV_possition_inversion
-
-        for i in range(globvar.blocks[0]):
-            i1 = i*globvar.blocks[1]
-            i2 = (i+1)*globvar.blocks[1]
-            for j in range(i1,i2):
-                if EV_gap[j] == 'small':
-                    EV_high = globvar.EV_high_s
-                    EV_low = globvar.EV_low_s
-                elif EV_gap[j] == 'large':
-                    EV_high = globvar.EV_high_l
-                    EV_low = globvar.EV_low_l
-                if inversions[j,1] == 1:
-                    EV_values[j,0] = EV_high[0] + (EV_high[1] - EV_high[0])*np.random.random()
-                    EV_values[j,1] = EV_low[0] + (EV_low[1] - EV_low[0])*np.random.random()
-                elif inversions[j,1] == -1:
-                    EV_values[j,1]=  EV_high[0] + (EV_high[1] - EV_high[0])*np.random.random()
-                    EV_values[j,0] = EV_low[0] + (EV_low[1] - EV_low[0])*np.random.random()
 
         #fig1 = mp.figure()
         #mp.hist(EV_value[:,0] - EV_value[:,1], bins = 2)
@@ -678,7 +666,8 @@ class init:
 
         for i in range(self.number_of_trials):
             for j in range(2):
-                rewards[i,j] = EV_values[i,j]/difficulties[i,j]
+                rewards[i,j] = round(float(EV_values[i,j])/difficulties[i,j],globvar.digits)
+                EV_values[i,j] = rewards[i,j]*difficulties[i,j]
 
         globvar.run_parameters['EV_values'] = EV_values
         globvar.run_parameters['difficulties'] = difficulties

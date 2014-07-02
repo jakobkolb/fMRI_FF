@@ -10,9 +10,6 @@ import pylink
 logging.console.setLevel(logging.CRITICAL)
 #-----------------------------------------------------------------------------
 
-#initialize run timer
-globvar.run_timer.append(core.MonotonicClock())
-
 #initialize the eyetracker
 #-----------------------------------------------------------------------------
 print 'initialize eyetracker'
@@ -61,14 +58,18 @@ print 'trial setup'
 init_parameters = init()
 
 #change participent specific parameters
-init_parameters.participant_parameter_dialog()
-
+#init_parameters.participant_parameter_dialog()
+    
 #load balancing from file
 init_parameters.load_trial_parameters()
 
 #generate trial parameters for the upcomming trials
 blocks, EV_gap, timing, inversions, EV_values, difficulties, stim_parameters, rewards = init_parameters.randomize_participant_specific_variables()
 #-----------------------------------------------------------------------------
+
+#initialize run timer
+globvar.run_timer.append(core.MonotonicClock())
+
 
 
 #preparation of trials: prepare output to file

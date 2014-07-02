@@ -4,11 +4,13 @@
 #general settings for order of trial modi and object positions
 #-----------------------------------------------------------------------------
 #Participant ID (with default value)
-participant_id = 55
+participant_id = 56
 #time for one fmri measurement
 fmri_time = 1.5                                     
 #Number settings for block structure given as [number of blocks, trials per block]
 blocks = [3,16]
+#This specifies which of the 6 preconfigured runs will be taken.
+run_number = 1
 #modi of trials to be taken, out of math, dot, audio
 trial_modi = ['dot', 'math', 'audio']
 #spacing of the objects on slides
@@ -40,7 +42,6 @@ full_screen = False
 
 #dictionary for all parameters of one run
 run_parameters = {}
-run_number = 1
 run_timer = []
 #-----------------------------------------------------------------------------
 
@@ -65,11 +66,11 @@ mean_baseline_trs = 2
 #parameter to fix shape of geometric distribution
 geometric_parameter = 'mean'
 #number of ts neccesary to consider a delay to be "long"
-long_trial_ts = 6
+long_trial_ts = 5
 #maximum time for one delay period i ts
-max_delay_ts = 8
+max_delay_ts = 6
 #number of long trials neccessary
-long_trial_number = 1
+long_trial_number = 2
 #maximum number of repetitions in randomization i.e max same trial types, equal delay times etc in a row
 max_rep = 4
 #-----------------------------------------------------------------------------
@@ -77,14 +78,16 @@ max_rep = 4
 #-----------------------------------------------------------------------------
 #settings for difficulties of tasks and monetary reward
 #-----------------------------------------------------------------------------
-#values for Expected Value of user decision for small and large EV gap in the form [min_EV,max_EV]
-#settigs for small and large EV gap are marked with _s and _l respectively
-EV_high_s = [0.6,0.8]          
-EV_low_s = [0.4,0.6]
-EV_high_l = [0.8,1]          
-EV_low_l = [0.2,0.4]
+#values for Expected Value of user decision for the higher EV in the form [min_EV,max_EV]
+#the value of the smaller EV is calculated as a fraction of the larger EV where the difference
+#between EVs is given in percent for small and large EV gap.
+EV_high = [18,22]
+EV_gap_l = 0.50
+EV_gap_s = 0.25
 #anticipated participant performance aka difficulty
 anticipated_participant_performance=[0.9,0.65]
+#the displayed rewards are calculated from difficulty and expected value and rounded to the given number of digits:
+digits = 0
 #difficulty settings for different trial modi in the form [easy, hard] 
 #for math trial:size of interval for correct answer
 math_trial_interval       = [10,3]
