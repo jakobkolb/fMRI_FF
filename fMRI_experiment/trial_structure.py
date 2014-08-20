@@ -25,8 +25,8 @@ pylink.getEYELINK().openDataFile(globvar.edf_filename)
 
 
 #send screen size to tracker
-pylink.getEYELINK().sendCommand("screen_pixel_coords =  0 0 %d %d" %(globvar.window_size[0], globvar.window_size[1]))
-pylink.getEYELINK().sendMessage("screen_pixel_coords =  0 0 %d %d" %(globvar.window_size[0], globvar.window_size[1]))
+pylink.getEYELINK().sendCommand("screen_pixel_coords =  0 0 %d %d" %(globvar.full_window_size[0], globvar.full_window_size[1]))
+pylink.getEYELINK().sendMessage("screen_pixel_coords =  0 0 %d %d" %(globvar.full_window_size[0], globvar.full_window_size[1]))
 
 #get tracker version and tracker software version
 tracker_software_ver = 0
@@ -58,7 +58,7 @@ print 'trial setup'
 init_parameters = init()
 
 #change participent specific parameters
-#init_parameters.participant_parameter_dialog()
+init_parameters.participant_parameter_dialog()
     
 #load balancing from file
 init_parameters.load_trial_parameters()
@@ -74,7 +74,7 @@ globvar.run_timer.append(core.MonotonicClock())
 
 #preparation of trials: prepare output to file
 #-----------------------------------------------------------------------------
-win = visual.Window(size=globvar.window_size, fullscr=globvar.full_screen)
+win = visual.Window(size=globvar.full_window_size, fullscr=globvar.full_screen)
 #write a short readme to the output file
 output_user_interaction = open('choice_study_user_input.txt','w')
 print>>output_user_interaction, '#output format is the following'
@@ -93,7 +93,7 @@ globvar.output_run_timing = open('participant_'+`globvar.participant_id`+'_run_'
 
 #preparation of trials: short introduction and explanation slide
 #-----------------------------------------------------------------------------
-message1 = visual.TextStim(win=win, text='Wellcome to the experiment! \n \n \n \n \n \n The experiment can be paused by pressing p or be ended by pressing escape on the response slide.')
+message1 = visual.TextStim(win=win, text='Wellcome to the experiment! \n \n \n \n \n \n The experiment can be paused by pressing p or be ended by pressing escape on the response slide.', height=globvar.text_height*globvar.f_y)
 message1.draw()
 win.flip()
 core.wait(2)
@@ -115,7 +115,7 @@ for block, kind in enumerate(blocks):
         announce_text = 'Random Dot Motion'
     if kind == 'audio':
         announce_text = 'Audio'
-    text = visual.TextStim(win, text=announce_text, bold=True, height=0.2, pos=(0,0))
+    text = visual.TextStim(win, text=announce_text, bold=True, height=globvar.text_height*globvar.f_y, pos=(0,0))
    
     text.draw()
 
