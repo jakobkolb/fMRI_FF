@@ -67,11 +67,6 @@ init_parameters.load_trial_parameters()
 blocks, EV_gap, timing, inversions, EV_values, difficulties, stim_parameters, rewards = init_parameters.randomize_participant_specific_variables()
 #-----------------------------------------------------------------------------
 
-#initialize run timer
-globvar.run_timer.append(core.MonotonicClock())
-
-
-
 #preparation of trials: prepare output to file
 #-----------------------------------------------------------------------------
 win = visual.Window(size=globvar.full_window_size, fullscr=globvar.full_screen)
@@ -93,12 +88,39 @@ globvar.output_run_timing = open('participant_'+`globvar.participant_id`+'_run_'
 
 #preparation of trials: short introduction and explanation slide
 #-----------------------------------------------------------------------------
-message1 = visual.TextStim(win=win, text='Wellcome to the experiment! \n \n \n \n \n \n The experiment can be paused by pressing p or be ended by pressing escape on the response slide.', height=globvar.text_height*globvar.f_y)
+message1 = visual.TextStim(win=win, text='Wellcome to the experiment! \n \n \n To start the experiment press space. \n To quit the experiment press escape.', height=globvar.text_height*globvar.f_y)
 message1.draw()
+event.clearEvents()
 win.flip()
-core.wait(2)
 #-----------------------------------------------------------------------------
 
+#wait for human start signal
+#-----------------------------------------------------------------------------
+start_human = False
+print 'waiting for human start signal'
+while start_human == False:
+    for key in event.getKeys():
+        if key == globvar.human_start_signal:
+            start_human = True
+        if key == globvar.exit_key:
+            win.close()
+            core.quit()
+#-----------------------------------------------------------------------------
+
+#wait for machine start signal
+#-----------------------------------------------------------------------------
+event.clearEvents()
+start_machine = False
+print 'waiting for machine start signal'
+while start_machine == False:
+    for key in event.getKeys():
+        if key == globvar.fMRI_start_signal:
+            start_machine = True
+#-----------------------------------------------------------------------------
+
+#initialize run timer
+globvar.experiment_timer.append(core.MonotonicClock())
+globvar.sequential_timer.append(0)
 
 #iterate over requested number of blocks and set parameters
 #-----------------------------------------------------------------------------
@@ -106,29 +128,7 @@ for block, kind in enumerate(blocks):
     i1 = block*globvar.blocks[1]
     i2 = (block+1)*globvar.blocks[1]
 
-    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'started_block', block, 'of ', globvar.blocks[1], kind, 'trials'
-
-    #announce block!
-    if kind == 'math':
-        announce_text = 'Arithmetic'
-    if kind == 'dot':
-        announce_text = 'Random Dot Motion'
-    if kind == 'audio':
-        announce_text = 'Audio'
-    text = visual.TextStim(win, text=announce_text, bold=True, height=globvar.text_height*globvar.f_y, pos=(0,0))
-   
-    text.draw()
-
-    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start block announcement'  
-
-    win.flip()
-    core.wait(3)
-
-    print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'end block announcement'
-
-    win.flip()
-    core.wait(1)
-
+    print>>globvar.output_run_timing, globvar.sequential_timer[-1], 'started_block', block, 'of ', globvar.blocks[1], kind, 'trials'
     #write a short note to the output file, if a new block starts
     print>>output_user_interaction, 'start ', kind, ' block ' + `block`
     print>>output_trial_timing, 'start ', kind, ' block ' + `block`
@@ -145,13 +145,14 @@ for block, kind in enumerate(blocks):
         #set trial parameters
         current_trial = trial(kind,win,i) 
         #run trial
-        print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'start_'+kind+'_trial', i, 'EV_gap_is', globvar.run_parameters['EV_gap'][i]
+        print>>globvar.output_run_timing, globvar.sequential_timer[-1],\
+                'start_'+kind+'_trial', i, 'EV_gap_is', globvar.run_parameters['EV_gap'][i]
         current_trial.run_trial()
-        print>>globvar.output_run_timing, globvar.run_timer[-1].getTime(), 'end_'+kind+'_trial', i
+        print>>globvar.output_run_timing, globvar.sequential_timer[-1],\
+                'end_'+kind+'_trial', i
         #data from trial.getData() is kind, user_active[y,n], input_key, difficulty_chosen, reward_chosen, dif*rew, 
         #                                                                difficulty_rejected, reward_rejected, dif*rew
         #save data from each trial, timing of slides, user input and inversions of stimuli
-        print>>output_user_interaction, str(current_trial.premature_input).strip('[]')
         print>>output_user_interaction, str(current_trial.getData()).strip('()'), str(inversions[i,:]).strip('[]')
         print>>output_trial_timing, str(current_trial.getTiming()).strip('()')
         del current_trial

@@ -13,7 +13,7 @@ blocks = [3,16]
 #This specifies which of the 6 preconfigured runs will be taken.
 run_number = 1
 #modi of trials to be taken, out of math, dot, audio
-trial_modi = ['dot', 'math', 'audio']
+trial_modi = ['visual', 'arithmetic', 'auditory']
 #-----------------------------------------------------------------------------
 
 
@@ -26,7 +26,7 @@ window_size = (800,600)
 #visual.Window.units='norm'
 text_height = 0.1   
 #start in Full Screen ?
-full_screen = True
+full_screen = False
 if full_screen:
     full_window_size = (1680,1050)  # this should be the fullscreen resolution
 else:
@@ -55,12 +55,13 @@ speaker_size = (0.2,0.2)
 #-----------------------------------------------------------------------------
 #paths for marker files. Relative paths must be given, if files are not in the
 #same folder
-file_marker_1  = 'star.png'
-file_marker_2  = 'square.png'
+symbol_folder = 'symbols/'
+file_marker_1  = symbol_folder + 'star.png'
+file_marker_2  = symbol_folder + 'square.png'
 #path for speaker icon file
-speaker_symbol = 'speaker_symbol.png'
+speaker_symbol = symbol_folder + 'speaker_symbol.png'
 #foldername of audio files
-audio_file_folder = ''
+audio_file_folder = 'audiofiles/de/'
 #names of audio files
 audio_files = [audio_file_folder+'stim_file_1.wav',audio_file_folder+'stim_file_2.wav']
 
@@ -70,8 +71,11 @@ audio_files = [audio_file_folder+'stim_file_1.wav',audio_file_folder+'stim_file_
 #-----------------------------------------------------------------------------
 #Timing settings
 #-----------------------------------------------------------------------------
+#Length of one run in units of fmir time
+
 #timing for each part of one trial in units of fmri_time
 #timing for the presention of the different tasks can be set independently
+#fixed times
 time_math_stim_1 = 1.8
 time_math_stim_2 = 1.8
 time_dot_stim_1 = 0.8
@@ -80,10 +84,11 @@ time_audio_stim_1 = 0.8
 time_audio_stim_2 = 0.8
 time_break_1 = 0.2
 time_break_2 = 0.2
-mean_delay_1_trs = 2
 time_options = 1.0
+time_response = 1.0
+#mean times for randomization of delays and baseline
+mean_delay_1_trs = 2
 mean_delay_2_trs = 2
-time_response = 1.
 mean_baseline_trs = 2
 #parameter to fix shape of geometric distribution
 geometric_parameter = 'mean'
@@ -162,11 +167,28 @@ edf_filename = "trial_eyetracker_output.edf"
 #-----------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------
+#settings for input keys and fmri start signal
+#-----------------------------------------------------------------------------
+#Participant input keys:
+participant_input_keys = ['left', 'right'] #[left, right]
+#Human start signal
+human_start_signal = 'space'
+#start signal from fMRI machine
+fMRI_start_signal = 'w'
+#Human escape signal
+exit_key = 'escape'
+#Human pause signal
+pause_key = 'p'
+
+#-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
 #Some global variables
 #-----------------------------------------------------------------------------
 #dictionary for all parameters of one run
 run_parameters = {}
-run_timer = []
+experiment_timer = []
+sequential_timer = []
 #-----------------------------------------------------------------------------
 
 

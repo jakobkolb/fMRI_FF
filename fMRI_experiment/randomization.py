@@ -103,17 +103,17 @@ for f in range(6):
         no_long_trials = True
         too_long_trials = True
         while (no_long_trials or too_long_trials) == True :
-            if kind == 'math':
+            if kind == 'arithmetic':
                 timing[i1:i2,0] = tp.time_math_stim_1
                 timing[i1:i2,1] = tp.time_break_1
                 timing[i1:i2,2] = tp.time_math_stim_2
                 timing[i1:i2,3] = tp.time_break_2
-            if kind == 'dot':
+            if kind == 'visual':
                 timing[i1:i2:,0] = tp.time_dot_stim_1
                 timing[i1:i2:,1] = tp.time_break_1
                 timing[i1:i2:,2] = tp.time_dot_stim_2
                 timing[i1:i2:,3] = tp.time_break_2
-            if kind == 'audio':
+            if kind == 'auditory':
                 timing[i1:i2,0] = tp.time_audio_stim_1
                 timing[i1:i2,1] = tp.time_break_1
                 timing[i1:i2,2] = tp.time_audio_stim_2
