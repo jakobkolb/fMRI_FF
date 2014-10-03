@@ -1,0 +1,5 @@
+\select@language {english}
+\contentsline {section}{\numberline {1}Preliminaries}{2}{section.1}
+\contentsline {section}{\numberline {2}Parameters}{2}{section.2}
+\contentsline {section}{\numberline {3}Randomization and Balancing}{3}{section.3}
+\contentsline {section}{\numberline {4}How to Use the Program - Step by Step}{3}{section.4}

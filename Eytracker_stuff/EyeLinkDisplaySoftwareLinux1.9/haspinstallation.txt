@@ -1,0 +1,22 @@
+Linux kernel 2.6
+----------------
+Extract addon/haspdriver/linux2.6/HDD_Linux_USB_dinst.tar.gz and follow the instruction given in the readme.txt
+
+
+older kernels   (Try this only if the above one does not work )
+----------------
+Installing hasp on linux(just follow this quick install 
+instructions for installing hasp on your linux machine.)
+You could find more detailed instruction haspdriver.tar.gz.
+1. mknod /dev/Hardlock c 42 0
+2. chmod 666 /dev/Hardlock
+3. modprobe parport_pc
+4. insmod aksparlnx.o (if it fails try to force it with insmod -f aksparlnx.o. find the right driver for your kernel) 
+4. mount -t usbdevfs none /proc/bus/usb (if usb is is not already mounted)
+5. aksusbd (start the aksusbd deamon)
+
+There are hasp rpms given on the addon directory for your convenience. Also, for detail information read the readme files given in the haspdirectory.
+
+
+
+

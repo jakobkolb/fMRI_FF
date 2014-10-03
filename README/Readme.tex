@@ -1,0 +1,50 @@
+\section{Preliminaries}
+This is the documentation for the fMRI Experiment on risk perception for Flavia Filimon in 2014. \\ 
+It is dedicated to explain the structure of the experimental program and the parameters of the experiment and gives a step by step manual to operate the experiment. \\
+The program consists of several files:
+\begin{itemize}
+    \item trial\_parameters.py: contains all parameters of the experiment. If something can be set, it is set there.
+    \item randomization.py: a script to generate the timing and balancing information for the experiment run that are then stored in the run\_parameters folder.
+    \item run\_trial.py: the script to start the experiment. 
+    \item trial\_classes.py: contains all the classes and routines for presentation of visuals and sound to the participant, the logging of participant input and the output of timestamped information.
+    \item timestamp\_comprehension\_v1.py and timestamp\_comprehension\_v2.py: scripts to disassemble the timestamped output from the experiment for the regressor based analysis of fMRI data.
+\end{itemize}
+
+\section{Parameters}
+The trial\_parameters.py contains ALL parameters that are in use in the experiment (timing, randomization, difficulties, position and size of visual objects etc.). \\
+The trial\_parameters.py files is designed to be self explanatory. It is structured in different sections for parameters concerning different parts of the experiment:
+\begin{itemize}
+    \item Difficulties and Rewards
+    \item Parameters for different tasks (Auditory, visual and arithmetic)
+    \item Trial timing
+    \item Settings for randomization (number of runs, blocks and trials per block, trial types)
+    \item Default settings for participant ID and run number
+    \item Input keys, start and escape signals
+    \item File locations
+    \item Eye Tracker settings
+    \item Position and size of visual elements
+\end{itemize}
+For each parameter there is a short explanation of its function.
+
+\section{Randomization and Balancing}
+The randomization is done via the randomization.py script. To use it, all parameters must be set within the trial\_parameters.py file. The one opens up a terminal, navigates to the folder where the script is stored and runs it via ``python randomization.py''.
+The script creates several sets of experiment parameters (timing, balancing information) and stores them in 'run\_parameters/'. It thereby randomizes the timings of the delay and baseline according to a geometric distribution with given means while making sure, that the given number of ``long'' delays is present for each condition.\\
+It also balances the appearance of easy and hard tasks (first or second), the order of trials in terms of small and large EV gaps and the assignment of the high/low EV to the hard/easy task.
+
+\section{How to Use the Program - Step by Step}
+
+These are step by step instructions for the usage of the experiment software:
+\begin{itemize}
+    \item[1] Make sure the necessary software is installed on the experimental machine. This includes Psychopy, eyelink, pylink, matplotlib and their dependencies.
+    \item[2] Make all settings for the experiment within the trial\_parameters.py file.
+    \item[3] Open a termal navigate to the location of the experiment program  and run it with ``python run\_trial.py''.
+    \item[4] Strap the participant into the machine.
+    \item[5] Check the settings for the participant ID, the difficulty settings and the run number, change them if necessary and hit OK.
+    \item[5] Wait for the eye tracker initialization (if it is connected).
+    \item[6] If the eye tracker is initialized the program waits for the human start signal.
+    \item[7] If the human start signal is given, the program waits for the fMRI start signal.
+    \item[8] If the fMRI start signal is received, the program subsequently presents the trials to the participant.
+    \item[9] After the experiment finished, run the timestamp comprehension routine on the timestamp output via ``python timestamp\_comprehension\_1.py \#timestamp\_file.txt'' or ``python timestamp\_comprehension\_2.py \#timestamp\_file.txt'' to obtain the output files for the different regressors/groups of regressors
+        
+\end{itemize}
+
