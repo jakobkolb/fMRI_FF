@@ -49,12 +49,16 @@ possible_rdm_directions = [[0,'right'],[180,'left']]
 # special parameters for the arithmetic task
 #-----------------------------------------------------------------------------
 # upper boundary of the sum of displayed numbers is diff + sim_dist 
-sim_dist = 10
+sum_dist = 10
 # determine if difficulty should be manipulated by floats
 # according to richards arithmetic scheme
 arith_difficulty = 'floats'
 # determine if you want floats at all
 floats = True
+#Some more parameters that richard uses in his arithmetic trial
+min_value_rev = 1
+max_value_rev = 29
+fixed_range = 4
 #-----------------------------------------------------------------------------
 
 

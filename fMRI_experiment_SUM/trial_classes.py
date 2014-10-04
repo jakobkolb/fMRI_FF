@@ -34,6 +34,7 @@ class trial:
         self.easyhard       = 0
         self.difficulty     = 0
         self.anounce        = anouncement
+        self.arith_single_digits = -1
         self.corrupted      = False
         self.name           = kind
         self.window         = win
@@ -83,8 +84,6 @@ class trial:
             self.modality = 2
         elif self.name == 'arithmetic':
             self.modality = 3
-        #THIS IS A DUMMY AND HAS TO BE CORRECTED AS SOON AS THE CORRECT ARITHMETIC TRIAL IS IMPLEMENTED
-        self.arith_single_digits = 1
 
         return  [0,0,0,
                 self.modality,
@@ -207,16 +206,92 @@ class trial:
                                         ( x_offset,-y_offset),
                                         ( x_offset, y_offset),
                                         (-x_offset, y_offset)]
-#########################################################################################
-#HI RICHARD - THESE ARE THE NUMBERS THAT HAVE TO BE GENERATED ACCORDING TO YOU NEW SCHEME:
-            numbers = np.zeros((2,4))
-            #Generation of numbers to sum over by the participant
-            for i in range(4):
-                numbers[0,i] = np.random.randint(1,21)
-                numbers[1,i] = np.random.randint(1,21)
-            
-            self.stimulus_1, self.stimulus_2 = sum(numbers[0,:]), sum(numbers[1,:])
-#########################################################################################
+
+            #interface for Richards implementation of the Arithmetic trial based on total Sum of numbers:
+            easyhard = random.randint(1,2)
+            if self.flip[0] == 1:
+                difficulty = 1
+            elif self.flip[0] == -1:
+                difficulty = 2
+            sumsum_1 = self.par_stim_1
+            sumsum_2 = self.par_stim_2
+            sum_dist = globvar.sum_dist
+            floats = globvar.floats
+            min_value = globvar.min_value_rev   # lowest value to be randomly generated. revised
+            max_value = globvar.max_value_rev  # highest value to be randomly generated. revised
+            if easyhard==1: # easy
+                if difficulty==1: # easy 1
+                    single_digits = 3
+                else:
+                    single_digits = 2
+            elif easyhard==2: # hard
+                if difficulty==1: # hard 1
+                    single_digits = 1
+                else:   # hard 2
+                    single_digits = 0
+            self.arith_single_digits = single_digits
+            ######## START NEW ARITHMETIC DIFFICULTY ######
+            correct_answer_1 = 0
+            correct_answer_2 = 0
+            # create 4 random numbers (with 1 decimal place, if wanted) varying based on whether they are two or one digits
+            # And yeah, I know, the following solution is not the requiring minimum processing
+            while correct_answer_1<sumsum_1 or correct_answer_1>=sumsum_1+sum_dist or correct_answer_2<sumsum_2 or correct_answer_2>=sumsum_2+sum_dist:
+                # check whether fitting numbers have already been found
+                if correct_answer_1<sumsum_1 or correct_answer_1>=sumsum_1+sum_dist:
+                    found_1 = False
+                    numbers_1 = []
+                else:
+                    found_1 = True
+                if correct_answer_2<sumsum_2 or correct_answer_2>=sumsum_2+sum_dist:
+                    found_2 = False
+                    numbers_2 = []
+                else:
+                    found_2 = True
+                # randomize numbers
+                if globvar.arith_difficulty=="floats": # manipulate difficulty additionally: create 4 random numbers varying by their decimal place.
+                    for x in [1,2,3,4]:
+                        num_1 = random.randint(min_value,max_value)
+                        num_2 = random.randint(min_value,max_value)
+                        if single_digits>=x: # here we define whether the number to be randomized should be single digit or not
+                            num_dec_1 = 0
+                            num_dec_2 = 0
+                        else:
+                            if floats==True: # you want floats?
+                                num_dec_1 = float(random.randint(0,10))/10
+                                num_dec_2 = float(random.randint(0,10))/10
+                            else:
+                                num_dec_1 = 0
+                                num_dec_2 = 0
+                        if found_1==False:
+                            numbers_1.append((num_1+num_dec_1))
+                        if found_2==False:
+                            numbers_2.append((num_2+num_dec_2))
+                else: # do not manipulate difficulty additionally
+                    for x in [1,2,3,4]:
+                        num_1 = random.randint(min_value,max_value+1)
+                        num_2 = random.randint(min_value,max_value+1)
+                        if floats==True:
+                            num_dec_1 = float(random.randint(0,10))/10
+                            num_dec_2 = float(random.randint(0,10))/10
+                        else:
+                            num_dec_1 = 0
+                            num_dec_2 = 0
+                        if found_1==False:
+                            numbers_1.append((num_1+num_dec_1))
+                        if found_2==False:
+                            numbers_2.append((num_2+num_dec_2))
+                # compute sum of the 4 sampled values. floats or integers?
+                if floats==True:
+                    correct_answer_1 = round(sum(numbers_1),1)
+                    correct_answer_2 = round(sum(numbers_2),1)
+                else:
+                    correct_answer_1 = int(sum(numbers_1))
+                    correct_answer_2 = int(sum(numbers_2))
+            random.shuffle(numbers_1) # shuffle where the numbers should appear
+            random.shuffle(numbers_2)
+            #### END NEW ARITHMETIC DIFFICULTY #####
+            numbers = [numbers_1,numbers_2]
+            self.stimulus_1, self.stimulus_2 = sum(numbers[0][:]), sum(numbers[1][:])
             #generate stimuli and put them in a list
             self.stim_1 = []
             self.stim_2 = []
@@ -225,9 +300,9 @@ class trial:
                 p1 = tuple(x+y for x,y in zip(self.pos_stim_1, relative_number_possitions[i]))
                 p2 = tuple(x+y for x,y in zip(self.pos_stim_2, relative_number_possitions[i]))
                 #add all numbers belonging to one task to one list.
-                self.stim_1.extend([ visual.TextStim(self.window, text=`int(numbers[0,i])`, pos=p1,
+                self.stim_1.extend([ visual.TextStim(self.window, text=str(numbers[0][i]), pos=p1,
                                 height=globvar.text_height*globvar.f_y)])
-                self.stim_2.extend([ visual.TextStim(self.window, text=`int(numbers[1,i])`, pos=p2,
+                self.stim_2.extend([ visual.TextStim(self.window, text=str(numbers[1][i]), pos=p2,
                                 height=globvar.text_height*globvar.f_y)])
             #append fixation cross to stimuli list
             self.stim_1.extend([cross])
@@ -316,7 +391,6 @@ class trial:
             #generate sound stimulus. open sound files in row
             self.audit_stim_1 = sound.Sound(value=stim_files[0], sampleRate = file_1_parameters[3])
             self.audit_stim_2 = sound.Sound(value=stim_files[1], sampleRate = file_1_parameters[3])
-            print globvar.speaker_size, globvar.f_y
             self.speaker_symbol = visual.ImageStim(  self.window, 
                                                 image=globvar.speaker_symbol, 
                                                 pos=(0,globvar.size), 
@@ -614,7 +688,9 @@ class trial:
                             'user_input', 'reaction_time=',self.tr,\
                             ' accepted_EV=', accepted_choice_reward*accepted_choice_dif, \
                             ' rejected_EV=', rejected_choice_reward*rejected_choice_dif, \
-                            ' EV_gap=', self.EV_gap
+                            ' EV_gap=', self.EV_gap, \
+                            ' hightEVchosen=', self.high_ev_chosen
+                            
 
                     user_active = True
                     self.user_input = [ 1,

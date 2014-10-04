@@ -105,7 +105,10 @@ for f in range(tp.number_of_runs):
 
 
     total_trial_duration = 0
+    times = []
+    N_draws = 0
     while tp.target_trial_duration != total_trial_duration:
+        N_draws += 1
         for i in range(tp.blocks[0]):
             kind = blocks[i]
             i1 = i*tp.blocks[1]
@@ -135,21 +138,21 @@ for f in range(tp.number_of_runs):
                 timing[i1:i2,7] = tp.time_response
 
                 for j in range(i1,i2):
-                    tmp = np.random.geometric(delay_1_prob)
-                    if tmp>tp.max_delay_ts:
-                        tmp = tp.max_delay_ts
+                    tmp = tp.max_delay_ts+1
+                    while tmp > tp.max_delay_ts:
+                        tmp = np.random.geometric(delay_1_prob)
                     timing[j,4] = tmp
 
                 for j in range(i1,i2):
-                    tmp = np.random.geometric(delay_2_prob)
-                    if tmp>tp.max_delay_ts:
-                        tmp = tp.max_delay_ts
+                    tmp = tp.max_delay_ts+1
+                    while tmp > tp.max_delay_ts:
+                        tmp = np.random.geometric(delay_2_prob)
                     timing[j,6] = tmp
 
                 for j in range(i1,i2):
-                    tmp = np.random.geometric(baseline_prob)
-                    if tmp>tp.max_delay_ts:
-                        tmp=tp.max_delay_ts
+                    tmp = tp.max_delay_ts+1
+                    while tmp > tp.max_delay_ts:
+                        tmp = np.random.geometric(baseline_prob)
                     timing[j,8] = tmp
 
                 no_long_trials = True
@@ -168,7 +171,17 @@ for f in range(tp.number_of_runs):
                         + (timing[i1:i2,6]>tp.max_delay_ts).sum() \
                         + (timing[i1:i2,8]>tp.max_delay_ts).sum()) == 0:
                     too_long_trials = False
-            total_trial_duration = round(sum(sum(timing[:,:])),0)
+        total_trial_duration = round(sum(sum(timing[:,:])),0)
+        times.append(total_trial_duration)
+        print N_draws, total_trial_duration, total_trial_duration==tp.target_trial_duration, no_long_trials, too_long_trials
+        if N_draws > 100:
+            fig = mp.figure()
+            ax = fig.add_subplot(111)
+            ax.hist(times, bins = 20)
+            mp.show()
+            break
+
+
 
     for i in range(tp.blocks[0]):
         i1 = i*tp.blocks[1]

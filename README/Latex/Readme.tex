@@ -30,7 +30,12 @@ For each parameter there is a short explanation of its function.
 The randomization is done via the randomization.py script. To use it, all parameters must be set within the trial\_parameters.py file. The one opens up a terminal, navigates to the folder where the script is stored and runs it via ``python randomization.py''.
 The script creates several sets of experiment parameters (timing, balancing information) and stores them in 'run\_parameters/'. It thereby randomizes the timings of the delay and baseline according to a geometric distribution with given means while making sure, that the given number of ``long'' delays is present for each condition.\\
 It also balances the appearance of easy and hard tasks (first or second), the order of trials in terms of small and large EV gaps and the assignment of the high/low EV to the hard/easy task.
-
+If it fails to find a trial that satisfies all of the conditions for the run timing after 1000 draws, it will break and show a histogram of the actual run times, that were found. This should help the experimentalist to find conditions that will be met within finite time.
+\par
+The timings for delays and baseline (which are jittered) are drawn as follows: \\
+The times of the events with jittered timing of one run are drawn from a geometric distribution with specified mean.
+This is done for each event repeatedly until the time is below the specified upper bound. When all times for this run are drawn, it is checked, whether they satisfy the condition of the fixed run length and the specified number of ``long'' events, that are necessary to deconvolute the fMRI data. Otherwise the run is discarded and the procedure starts over. \\
+To check the actual statistical properties of the timings that are produced by this procedure, run ``produce\_random\_time\_sample.py''. This produces a sample of timings from 100 runs which can then be used to derive whatever statistic quantities are needed.
 \section{How to Use the Program - Step by Step}
 
 These are step by step instructions for the usage of the experiment software:
